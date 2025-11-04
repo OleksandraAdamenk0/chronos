@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./chronos-fr
+    container_name: chronos-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./chronos-bk
+    container_name: chronos-backend
+    restart: always
+    env_file:
+      - ./chronos-bk/.env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - mailhog
+    environment:
+      - NODE_ENV=development
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MONGO_URI=mongodb://mongo:27017/calendar_db
+    volumes:
+      - ./chronos-bk:/app
+      - /app/node_modules
+
+  mongo:
+    image: mongo:6
+    container_name: chronos-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: chronos-mailhog
+    restart: always
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP port
+
+volumes:
+  mongo_data:
