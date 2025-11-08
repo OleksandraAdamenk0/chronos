@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -39,4 +38,38 @@
 
 .read-the-docs {
   color: #888;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(93, 9, 237, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(11, 147, 234, 0.6); }
+}
+
+.animate-pulse-glow {
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes spin_6s_linear_infinite {
+  from { transform: rotate(0deg) }
+  to { transform: rotate(360deg) }
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: #ef2af6 !important;
+  color: #202020 !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: #5abde8 !important;
+  color: #202020 !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  background: #5ae8a1 !important;
+  color: #202020 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background: #ffb737 !important;
+  color: #202020 !important;
 }

@@ -1,16 +1,9 @@
 import { Document, Schema, Model, model } from "mongoose";
 
+import {UserDBType} from "../types";
+
 // type for the document
-export interface IUser extends Document {
-  login: string;
-  email: string;
-  fullName?: string;
-  avatar?: string;
-  country: string;
-  password: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+export interface IUser extends Document, UserDBType {}
 
 // Schema
 const userSchema: Schema<IUser>  = new Schema({
@@ -20,6 +13,7 @@ const userSchema: Schema<IUser>  = new Schema({
   avatar: { type: String, default: "" },
   country: { type: String, required: true },
   password: { type: String, required: true },
+  confirmed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

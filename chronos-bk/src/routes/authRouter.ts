@@ -3,14 +3,17 @@ import { Router } from 'express';
 // dummy func to create routes quickly
 import dummy from "../utils/dummyController";
 
+// controllers
+import {registrationController, loginController, verifyToken} from "../modules/auth/controller";
+
 // router and routes
 const router = Router();
 
-router.post('/register', dummy);
-router.post('/login', dummy);
-router.post('/logout', dummy);
-router.post('/verify', dummy);
-router.post('/confirm/:token', dummy);
+router.post('/register', registrationController);
+router.post('/login', loginController);
+router.get('/logout', dummy);
+router.get('/verify', verifyToken);
+router.get('/confirm/:token', dummy);
 
 
 export default router;
