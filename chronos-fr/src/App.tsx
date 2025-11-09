@@ -28,6 +28,8 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<MainPage/>} />
+            <Route path="/calendar" element={<MainPage/>} />
+
 
           </Route>
         </Routes>

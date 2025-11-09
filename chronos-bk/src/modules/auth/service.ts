@@ -1,10 +1,15 @@
 import bcrypt from "bcrypt";
 
+const HOST = process.env.HOST;
+const PORT = process.env.PORT;
+
 // types
-import {LoginRequestType, RegistrationRequestType, UserResponseType} from "../../types";
+import {LoginRequestType, RegistrationRequestType, UserDBType, UserResponseType} from "../../types";
 
 // models
 import User from "../../models/UserModel";
+import {checkConfirmToken, generateConfirmationToken} from "../security/tokens";
+import {sendConfirmationEmail} from "../notification/mailSender";
 
 export const registrationService = async (data: RegistrationRequestType): Promise<void> => {
 
@@ -27,6 +32,18 @@ export const registrationService = async (data: RegistrationRequestType): Promis
 
   // @ts-ignore
   const userId = savedUser._id.toString();
+
+  // confirmation mail
+  try {
+    const token = generateConfirmationToken(userId);
+    const url = `${HOST}${PORT}/api/v1/auth/confirm/${token}`;
+    await sendConfirmationEmail(data.email, url);
+  } catch (err) {
+    console.log(err);
+    await User.deleteOne({ _id: userId });
+    throw {status: 500, message: "Internal Server Error"};
+  }
+
 }
 
 export const loginService = async (data: LoginRequestType): Promise<UserResponseType> => {
@@ -50,4 +67,21 @@ export const loginService = async (data: LoginRequestType): Promise<UserResponse
   if (!confirmed) throw {status: 401, message: "Confirm email before logging in"};
 
   return user;
+}
+
+
+export const confirmService = async (token: string): Promise<string> => {
+  try {
+    // check token
+    const payload = checkConfirmToken(token);
+
+    // update confirmation status and get user data
+    const foundUser: UserDBType | null = await User.findOneAndUpdate({ _id: payload.id, }, { $set: { confirmed : true}}, { new: true });
+    if (!foundUser) throw {status: 401, message: "Such user does not exist"};
+
+    return payload.id
+  } catch (err: any) {
+    if (err.status && err.message) throw err;
+    else throw {status: 401, message: "Invalid token"};
+  }
 }
