@@ -15,7 +15,7 @@ export function CreateEventDialog({open, setOpen}: CreateEventFormProps) {
 
   return (
     <Dialog open={open}>
-      <DialogContent>
+      <DialogContent className="overflow-y-auto max-h-[90svh]">
         <DialogHeader>
           <DialogTitle>Create new Event</DialogTitle>
         </DialogHeader>

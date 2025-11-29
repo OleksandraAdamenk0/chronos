@@ -77,6 +77,19 @@ export type EventData = {
   color: HexColorType;
 };
 
+export type EventCreateType = {
+  title: string,
+  description: string,
+  startDate: string,
+  endDate: string,
+  isRepeat: boolean,
+  address: string,
+  startRepeatDate?: string,
+  endRepeatDate?: string,
+  period?: RepeatType;
+  reminder?: string,
+}
+
 export type EventPreview = {
   id: string;
   calendarId: string;

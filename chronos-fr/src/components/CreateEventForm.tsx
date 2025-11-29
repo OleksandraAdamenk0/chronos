@@ -6,8 +6,10 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.tsx";
 import {toast} from "sonner";
 import {type Ref, useEffect, useState} from "react";
-import type {CategoryType} from "@/types";
+import type {CategoryType, EventCreateType, RepeatType} from "@/types";
 import {useCalendar} from "@/hooks/useCalendar.ts";
+import MiniMapPicker from "@/components/MiniMapPicker.tsx";
+import {POST} from "@/utils/api.ts";
 
 interface CreateEventFormProps {
   ref: Ref<HTMLFormElement>;
@@ -22,6 +24,7 @@ export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [reminderDate, setReminderDate] = useState<Date | undefined>(undefined);
+  const [address, setAddress] = useState<string>("");
 
   useEffect(() => {
     if (!date) return;
@@ -38,17 +41,54 @@ export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
   const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    // check dates input
     if (!startDate || !endDate) {
       toast.error("Please enter a valid start and end dates");
       return;
     }
 
     const form = new FormData(e.currentTarget);
+
+    // check inputs
     const title = form.get("title");
     const description = form.get("description");
-    const isRepeat = form.get("isRepeat") === "on";
 
-    console.log(getCalendarId(), title, description, startDate?.toString(), endDate?.toString(), isRepeat, reminderDate);
+    if (!title || !description) {
+      toast.error("Please enter a valid title and description");
+      return;
+    }
+
+    const data: EventCreateType = {
+      title: title as string,
+      description:description as string,
+      isRepeat: form.get("isRepeat") === "on",
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      address: address
+    }
+
+    if (isRepeat) {
+      // check values
+      const period = form.get("period");
+      const startRepeatDate = form.get("startRepeatDate");
+      const endRepeatDate = form.get("endRepeatDate");
+
+      if (!period || !startRepeatDate || !endRepeatDate) {
+        toast.error("Please enter a valid repeat data");
+        return;
+      }
+
+      data.period = period as string as RepeatType;
+      data.startRepeatDate = (startRepeatDate as unknown as Date).toISOString();
+      data.endRepeatDate = (endRepeatDate as unknown as Date).toISOString();
+    }
+
+    try {
+      await POST(`calendar/${getCalendarId()}/event`, data);
+    } catch (error) {
+      console.log(error);
+      toast.error("Ups. Something went wrong, please try again later");
+    }
   }
 
 
@@ -124,6 +164,12 @@ export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
 
           </Select>
         </div>
+
+        <div className="grid gap-2">
+          <Label>Location (optional)</Label>
+          <MiniMapPicker value={address} onChange={setAddress} />
+        </div>
+
       </div>
     </form>
 
