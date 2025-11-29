@@ -10,13 +10,18 @@ interface Props {
 const UserProvider: React.FC<Props> = ({ children }: Props) => {
   const [value, setValue] = useState<UserType | null>(null);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const [noReload, setNoReload] = useState<boolean>(false);
 
   useEffect(() => {
-    if (noReload) return;
+    if (isLoaded) return; // works only once
     fetchUser();
-    setNoReload(true);
-  })
+  }, [])
+
+  useEffect(() => {
+    if (value) setIsLoaded(true);
+  }, [value]);
+
+  useEffect(() => {
+  }, [isLoaded]);
 
   const fetchUser = async () => {
     try {
@@ -25,13 +30,12 @@ const UserProvider: React.FC<Props> = ({ children }: Props) => {
       else console.error(result.error);
     } catch (e) {
       console.error("unexpected error in user context while fetching user", e);
-    } finally {
       setIsLoaded(true);
     }
   }
 
   const getUser = (): UserType | null => {
-    if (!isLoaded) fetchUser();
+    if (!isLoaded) fetchUser().then(() => {return value});
     return value;
   };
 

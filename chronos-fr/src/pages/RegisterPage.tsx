@@ -29,7 +29,7 @@ export default function SignupPage() {
         <div className="flex justify-center gap-4 md:justify-around flex-col md:flex-row">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-md">
-              <img src="/logo.svg" alt="Logo" />
+              <img src="/logo.svg" alt="Logo" className="logo" />
             </div>
             Chronos
           </a>

@@ -34,3 +34,14 @@ export type UserDBType = {
 }
 
 export type UserResponseType = Omit<UserDBType, "password" | "confirmed">
+
+// ==============================================
+// Permissions
+// ==============================================
+
+export type PermissionsType = {
+  manageCalendar: boolean;
+  manageParticipants: boolean;
+  manageCategories: boolean;
+  manageEvents: boolean;
+}

@@ -1,4 +1,5 @@
 import React, {useContext} from "react";
+import {useNavigate} from "react-router-dom";
 
 // types
 import type {LoginFormType} from "@/types";
@@ -16,11 +17,13 @@ import { UserContext } from "@/contexts/UserContext";
 
 const LoginPage: React.FC = () => {
   const userContext = useContext(UserContext);
+  const navigate = useNavigate();
 
   const handleSubmit = async (data: LoginFormType) => {
     try {
       const user = await login(data);
       if (userContext) userContext.setUser(user);
+      navigate("/calendar");
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -30,7 +33,7 @@ const LoginPage: React.FC = () => {
     <div className="flex min-h-svh flex-col items-center justify-center">
       <div className="absolute top-1/16 left-1/16 flex items-center gap-2 font-medium">
         <div className=" bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-md">
-          <img src="/logo.svg" alt="Logo" />
+          <img src="/logo.svg" alt="Logo" className="logo"/>
         </div>
         Chronos
       </div>

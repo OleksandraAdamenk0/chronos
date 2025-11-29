@@ -8,7 +8,13 @@ import {LoginRequestType, RegistrationRequestType, UserDBType, UserResponseType}
 
 // models
 import User from "../../models/UserModel";
-import {checkConfirmToken, generateConfirmationToken} from "../security/tokens";
+import {
+  checkAccessToken,
+  checkConfirmToken,
+  checkRefreshToken,
+  generateAccessToken,
+  generateConfirmationToken
+} from "../security/tokens";
 import {sendConfirmationEmail} from "../notification/mailSender";
 
 export const registrationService = async (data: RegistrationRequestType): Promise<void> => {
@@ -46,7 +52,7 @@ export const registrationService = async (data: RegistrationRequestType): Promis
 
 }
 
-export const loginService = async (data: LoginRequestType): Promise<UserResponseType> => {
+export const loginService = async (data: LoginRequestType): Promise<{ user: UserResponseType, id: string }> => {
   // existingEmail
   if (!(await User.findOne({ email: data.email }))) {
     throw {status: 409, message: "User with such email does not exist"};
@@ -58,15 +64,16 @@ export const loginService = async (data: LoginRequestType): Promise<UserResponse
   }
 
   // get user
-  const foundUser = await User.findOne({ login: data.login, email: data.email }).exec();
+  const foundUser = await User.findOne({ login: data.login, email: data.email }).lean();
   if (!foundUser) throw {status: 404, message: "User not found"};
 
-  const { password, confirmed, ...user } = foundUser.toObject();
+  const { password, confirmed, _id, ...user } = foundUser;
 
   if (!(await bcrypt.compare(data.password, password))) throw {status: 401, message: "Invalid password"};
   if (!confirmed) throw {status: 401, message: "Confirm email before logging in"};
 
-  return user;
+
+  return {user, id: _id.toString()};
 }
 
 
@@ -83,5 +90,28 @@ export const confirmService = async (token: string): Promise<string> => {
   } catch (err: any) {
     if (err.status && err.message) throw err;
     else throw {status: 401, message: "Invalid token"};
+  }
+}
+
+export const verifyService = async (token: string): Promise<UserResponseType> => {
+  try {
+    const id = checkAccessToken(token);
+    const foundUser = await User.findOne({ _id: id }).lean();
+    if (!foundUser) throw new Error("no user with such id");
+    const {password, confirmed, ...user} = foundUser;
+    return user;
+  } catch (error) {
+    throw {status: 401, message: "Invalid token"};
+  }
+}
+
+export const refreshService = async (token: string): Promise<string> => {
+  try {
+    const id = checkRefreshToken(token);
+    const foundUser = await User.findOne({ _id: id }).lean();
+    if (!foundUser) throw new Error("no user with such id");
+    return generateAccessToken(id);
+  } catch (error) {
+    throw {status: 401, message: "Refreshing failed"};
   }
 }

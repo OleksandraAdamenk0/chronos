@@ -18,7 +18,7 @@ export const checkConfirmToken = (token: string) => {
   catch (err) { throw new Error("Invalid or expired token") }
 }
 
-export const generateAccessToken =  async (id: string): Promise<string> => {
+export const generateAccessToken =  (id: string): string => {
   if (!id) throw new Error("Id is required");
   if (!JWT_ACCESS || !JWT_ACCESS_EXPIRATION) throw new Error("Keys are required");
   const token = jwt.sign({id: id}, JWT_ACCESS as string, {expiresIn: JWT_ACCESS_EXPIRATION});
@@ -26,7 +26,7 @@ export const generateAccessToken =  async (id: string): Promise<string> => {
   return token;
 }
 
-export const generateRefreshToken = async (id: string): Promise<string> => {
+export const generateRefreshToken = (id: string): string => {
   if (!id) throw new Error("Id is required");
   if (!JWT_REFRESH || !JWT_REFRESH_EXPIRATION) throw new Error("Keys are required");
   const token = jwt.sign({id: id}, JWT_REFRESH as string, { expiresIn: JWT_REFRESH_EXPIRATION});
@@ -34,10 +34,10 @@ export const generateRefreshToken = async (id: string): Promise<string> => {
   return token;
 }
 
-export const generateTokens = async (id: string): Promise<{ accessToken: string, refreshToken: string }> => {
+export const generateTokens = (id: string): { accessToken: string, refreshToken: string } => {
   if (!id) throw new Error("Id is required");
-  const accessToken = await generateAccessToken(id);
-  const refreshToken = await generateRefreshToken(id);
+  const accessToken = generateAccessToken(id);
+  const refreshToken = generateRefreshToken(id);
   return {accessToken, refreshToken};
 }
 

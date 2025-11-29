@@ -12,7 +12,7 @@ export interface ICalendarUser extends Document {
   userId: Types.ObjectId;
   calendarId: Types.ObjectId;
   permissions: PermissionsType;
-  color?: string;
+  color: string;
 }
 
 // schema

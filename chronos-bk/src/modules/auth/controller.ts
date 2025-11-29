@@ -1,18 +1,36 @@
 import {Request, Response} from 'express';
 
 // services
-import {registrationService, loginService, confirmService} from "./service";
+import {registrationService, loginService, confirmService, verifyService, refreshService} from "./service";
 
 // types
 import type {RegistrationRequestType, LoginRequestType} from "../../types";
-import {generateTokens} from "../security/tokens";
+import {checkAccessToken, generateTokens} from "../security/tokens";
 
-export const verifyToken = (req: Request, res: Response) => {
+export const verifyToken = async (req: Request, res: Response) => {
   const accessToken = req.cookies.accessToken;
+  try {
+    const user = await verifyService(accessToken);
+    return res.status(200).json({success: true, data: user});
+  } catch (error: any) {
+    return res.status(error.status).json({success: false, error: error.message});
+  }
+}
+
+export const refreshToken = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
-  
-  console.log("tokens: ", accessToken, refreshToken);
-  return res.status(200).json({})
+  try {
+    const accessToken = await refreshService(refreshToken);
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
+      path: "/"
+    });
+    return res.status(200).json({status: "success", data: {message: "Token refreshed successfully"}});
+  } catch (error: any) {
+    return res.status(error.status).json({status: "error", error: error.message});
+  }
 }
 
 export const registrationController = async (req: Request, res: Response) => {
@@ -47,7 +65,23 @@ export const loginController = async (req: Request, res: Response) => {
   })
 
   try {
-    const user = await loginService(data);
+    const {user, id} = await loginService(data);
+    const { accessToken, refreshToken } = generateTokens(id);
+
+    // set cookies
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
+      path: "/"
+    });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
+      path: "/"
+    });
     return res.status(200).json({
       success: true,
       data: user
@@ -61,6 +95,12 @@ export const loginController = async (req: Request, res: Response) => {
   }
 }
 
+export const logoutController = async (req: Request, res: Response) => {
+  res.clearCookie("accessToken", { httpOnly: true, path:"/", secure: false, sameSite: "lax" });
+  res.clearCookie("refreshToken", { httpOnly: true, path:"/", secure: false, sameSite: "lax" });
+  res.json({success: true, data: {message: "Logged out"}});
+}
+
 export const confirmController = async (req: Request, res: Response) => {
     // get email token
     const { token } = req.params;
@@ -69,7 +109,7 @@ export const confirmController = async (req: Request, res: Response) => {
     try {
       // confirm account
       const userId = await confirmService(token);
-      const { accessToken, refreshToken } = await generateTokens(userId);
+      const { accessToken, refreshToken } = generateTokens(userId);
 
       // set cookies
       res.cookie("refreshToken", refreshToken, {
