@@ -1,13 +1,15 @@
 import React, {type ReactNode, useEffect, useState} from "react";
-import {GET} from "@/utils/api.ts";
+import {DELETE, GET} from "@/utils/api.ts";
 import type {UserType} from "@/types";
 import {UserContext} from "@/contexts/UserContext.tsx";
+import {useNavigate} from "react-router-dom";
 
 interface Props {
   children: ReactNode;
 }
 
 const UserProvider: React.FC<Props> = ({ children }: Props) => {
+  const navigate = useNavigate();
   const [value, setValue] = useState<UserType | null>(null);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
@@ -44,12 +46,33 @@ const UserProvider: React.FC<Props> = ({ children }: Props) => {
     setIsLoaded(true);
   };
 
-  const logout = () => {
-    setValue(null);
-    setIsLoaded(false);
+  const logout = async () => {
+    try {
+      setIsLoaded(true);
+      await GET("auth/logout");
+      setValue(null);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      navigate("/login");
+      setIsLoaded(false);
+    }
   }
 
-  return <UserContext.Provider value={{isLoaded, getUser, setUser, logout}}>{children}</UserContext.Provider>
+  const deleteUser = async () => {
+    try {
+      setIsLoaded(true);
+      await DELETE('account/me');
+      setValue(null);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      navigate("/login");
+      setIsLoaded(false);
+    }
+  }
+
+  return <UserContext.Provider value={{user: value, isLoaded, getUser, setUser, logout, deleteUser}}>{children}</UserContext.Provider>
 }
 
 export default UserProvider;

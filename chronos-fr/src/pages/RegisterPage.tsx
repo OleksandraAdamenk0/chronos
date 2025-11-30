@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 import {ModeToggle} from "@/components/mode-toggle.tsx";
 import {useState} from "react";
-import AvatarUpload from "@/components/avatarUpload.tsx";
+import AvatarUpload from "@/components/AvatarUpload.tsx";
 
 export default function SignupPage() {
   const [photo, setPhoto] = useState<File | null>(null);

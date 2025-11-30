@@ -14,10 +14,9 @@ import {useCalendar} from "@/hooks/useCalendar.ts";
 
 import { FaCaretLeft } from "react-icons/fa6";
 import ColorPicker from "@/components/colorPicker.tsx";
-import {DELETE, GET, POST} from "@/utils/api.ts";
+import {DELETE, POST} from "@/utils/api.ts";
 import {toast} from "sonner";
 import {CreateEventDialog} from "@/components/CreateEventDialog.tsx";
-import {useNavigate} from "react-router-dom";
 import type {CalendarPreviewType, CategoryType} from "@/types";
 
 import { Share2, ImageDown, Trash2 } from "lucide-react";
@@ -28,6 +27,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
+import {useUser} from "@/hooks/useUser.ts";
 
 
 // function getContrastColor(hexColor: string) {
@@ -43,8 +43,6 @@ import {
 // }
 
 export function AppSidebar() {
-  const navigate = useNavigate();
-
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isCalendarsOpen, setIsCalendarsOpen] = useState<boolean>(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState<boolean>(false);
@@ -52,6 +50,7 @@ export function AppSidebar() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState<boolean>(false);
   const [color, setColor] = useState("#aabbcc");
   const {getCalendars, setStartDay, addCalendars, deleteCalendar, getCalendarId, setCalendarId, getPermissions, getCategories} = useCalendar();
+  const {logout} = useUser();
 
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -81,14 +80,12 @@ export function AppSidebar() {
     console.log(form);
   }
 
-  const handleLogout = async () => {
-    try {
-      await GET("auth/logout");
-    } catch (error) {
-      console.log(error);
-    } finally {
-      navigate("/login");
-    }
+  const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const name = (form.name as unknown as HTMLInputElement).value;
+    const description = (form.description as unknown as HTMLInputElement).value;
+    console.log(name, description, color);
   }
 
   const handleDeleteCalendar = async (calendar: CalendarPreviewType) => {
@@ -234,17 +231,21 @@ export function AppSidebar() {
                     </DialogTrigger>
                     {getCategories().length > 0 && (<Separator />)}
                     <DialogContent>
-                      <form onSubmit={handleCreateCalendar}>
+                      <form onSubmit={handleCreateCategory}>
                         <DialogHeader>
-                          <DialogTitle>New calendar</DialogTitle>
+                          <DialogTitle>New category</DialogTitle>
                           <DialogDescription>
                             Create a new category to keep your plans organized and always at hand.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4">
+                        <div className="grid gap-4 m-2">
                           <div className="grid gap-3">
                             <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" defaultValue="New calendar" />
+                            <Input id="name" name="name" defaultValue="New category" />
+                          </div>
+                          <div className="grid gap-3">
+                            <Label htmlFor="description">Description</Label>
+                            <Input type="text" id="description" defaultValue="Category description"></Input>
                           </div>
                           <div className="grid gap-3">
                             <Label htmlFor="color">Color</Label>
@@ -294,7 +295,7 @@ export function AppSidebar() {
       <SidebarFooter>
 
         <SidebarGroup>
-          <Button variant="outline" className="w-full mb-2" onClick={handleLogout}>Logout</Button>
+          <Button variant="outline" className="w-full mb-2" onClick={logout}>Logout</Button>
         </SidebarGroup>
 
         <SidebarGroup>

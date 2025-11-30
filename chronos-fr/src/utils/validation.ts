@@ -4,7 +4,7 @@ const validateLogin = (data: string): void => {
   if (data.length <= 4) throw new Error("Login is too short");
 }
 
-const validateEmail = (data: string): void => {
+export const validateEmail = (data: string): void => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!re.test(data)) throw new Error("Email is invalid");
 }

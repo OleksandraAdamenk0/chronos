@@ -9,6 +9,56 @@ interface WeekDayProps {
   onEventClick?: (ev: EventPreview) => void;
 }
 
+const layoutEvents = (events: EventPreview[], hourHeight: number) => {
+  const sorted = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const lanes: EventPreview[][] = [];
+
+  sorted.forEach(ev => {
+    let placed = false;
+    for (const lane of lanes) {
+      if (!lane.some(e => {
+        const eStart = new Date(e.startDate).getTime();
+        const eEnd = new Date(e.endDate).getTime();
+        const evStart = new Date(ev.startDate).getTime();
+        const evEnd = new Date(ev.endDate).getTime();
+        return evStart < eEnd && evEnd > eStart;
+      })) {
+        lane.push(ev);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) lanes.push([ev]);
+  });
+
+  const eventLayouts: { ev: EventPreview; left: number; width: number }[] = [];
+
+  lanes.forEach((lane) => {
+    lane.forEach(ev => {
+      const overlappingLanes = lanes.filter(l => l.some(e => {
+        const eStart = new Date(e.startDate).getTime();
+        const eEnd = new Date(e.endDate).getTime();
+        const evStart = new Date(ev.startDate).getTime();
+        const evEnd = new Date(ev.endDate).getTime();
+        return evStart < eEnd && evEnd > eStart;
+      }));
+      const width = 100 / overlappingLanes.length;
+      const indexInOverlap = overlappingLanes.findIndex(l => l.includes(ev));
+      const left = indexInOverlap * width;
+      eventLayouts.push({ ev, left, width });
+    });
+  });
+
+  return eventLayouts.map(({ ev, left, width }) => {
+    const start = new Date(ev.startDate);
+    const end = ev.endDate ? new Date(ev.endDate) : new Date(ev.startDate);
+    const startheight = (start.getHours() * 60 + start.getMinutes()) / 60 * hourHeight;
+    const duration = (end.getTime() - start.getTime()) / 3600000 * hourHeight || 30;
+
+    return { ev, top: startheight, height: duration, left: `${left}%`, width: `${width}%` };
+  });
+};
+
 const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hourHeight, setHourHeight] = useState(0);
@@ -83,45 +133,32 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
 
         {/* positioned events */}
         <div className="absolute inset-0">
-          {getForDay(day).map(ev => {
-            const start = new Date(ev.startDate);
-            const end = ev.endDate ? new Date(ev.endDate) : new Date(ev.startDate);
-            if (end.getDate() > day.getDate()) {
-              end.setDate(start.getDate());
-              end.setHours(23);
-              end.setMinutes(59);
-            }
-            const startheight = (start.getHours() * 60 + start.getMinutes()) / 60 * hourHeight;
-            const duration = (end.getTime() - start.getTime()) / 3600000 * hourHeight  || 30;
-
-            return (
-              <div
-                key={ev.id}
-                className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
-                // onClick={() => onEventClick?.(ev)}
-                style={{
-                  position: "absolute",
-                  top: startheight,
-                  left: "4px",
-                  right: "4px",
-                  height: duration,
-                  border: "1px solid var(--card)",
-                  background: "var(--secondary)",
-                  overflow: "hidden",
-                }}
-              >
-                <div className="absolute"
-                     style = {{
-                       top: "0px",
-                       left: "0px",
-                       width: "4px",
-                       height: duration,
-                       background: ev.color || "none"
-                     }}></div>
-                <div className="text-xs font-semibold leading-tight">{ev.title}</div>
-              </div>
-            );
-          })}
+          {layoutEvents(getForDay(day), hourHeight).map(({ ev, top, height, left, width }) => (
+            <div
+              key={ev.id}
+              className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
+              style={{
+                position: "absolute",
+                top,
+                left,
+                width,
+                height,
+                border: "1px solid var(--card)",
+                background: "var(--secondary)",
+                overflow: "hidden",
+              }}
+            >
+              <div className="absolute"
+                   style = {{
+                     top: 0,
+                     left: 0,
+                     width: "4px",
+                     height,
+                     background: ev.color || "none"
+                   }}></div>
+              <div className="text-xs font-semibold leading-tight">{ev.title}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

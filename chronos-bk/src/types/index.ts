@@ -45,3 +45,27 @@ export type PermissionsType = {
   manageCategories: boolean;
   manageEvents: boolean;
 }
+
+// ==============================================
+// Calendar
+// ==============================================
+
+export type RepeatType = "everyday" | "everyweek" | "everymonth" | "everyyear";
+
+// ==============================================
+// Events
+// ==============================================
+
+export type CreateEventDataType = {
+  title: string,
+  description: string,
+  startDate: string,
+  endDate: string,
+  isRepeat: boolean,
+  address?: string,
+  startRepeatDate?: string,
+  endRepeatDate?: string,
+  period?: RepeatType;
+  reminder?: string,
+}
+

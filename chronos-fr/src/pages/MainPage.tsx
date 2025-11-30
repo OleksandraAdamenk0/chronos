@@ -12,11 +12,13 @@ import {Button} from "@/components/ui/button.tsx";
 import {FaChevronLeft, FaChevronRight} from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 import type {EventPreview} from "@/types";
+import MonthView from "@/components/views/monthView.tsx";
+import YearView from "@/components/views/yearView.tsx";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const {getView, startDay, setStartDay, getCalendarId} = useCalendar();
+  const {getView, setView, startDay, setStartDay, getCalendarId} = useCalendar();
 
   const changeDate = (direction: string): void => {
     const newDate = new Date(startDay);
@@ -47,6 +49,11 @@ const MainPage: React.FC = () => {
     navigate("/create", {state: {date: date}});
   }
 
+  const handleDaySelection = (date: Date): void => {
+    setStartDay(date);
+    setView("day");
+  }
+
   const handleEventClick = (event: EventPreview): void => {
     if (getCalendarId() === "0") return;
     console.log("event clicked:", event);
@@ -62,7 +69,7 @@ const MainPage: React.FC = () => {
         </div>
       )}
 
-      <div className="p-2 flex flex-col flex-1 h-full">
+      <div className="p-2 flex flex-col flex-1">
         {getView() === "week" ? (
           <WeekView
             onDayClick={handleDayClick}
@@ -72,11 +79,14 @@ const MainPage: React.FC = () => {
           <WeekDay onDayClick={handleDayClick} day={startDay}/>
         ): getView() === "events"? (
           <EventsView onEventClick={handleEventClick}></EventsView>
+        ): getView() === "month" ? (
+          <MonthView date={startDay} onDayClick={handleDaySelection} type="full"/>
+        ): getView() === "year" ? (
+          <YearView date={startDay} onDayClick={handleDaySelection} />
         ): (
           <>This view is in development. Try later</>
         )}
       </div>
-
     </div>
 
   )

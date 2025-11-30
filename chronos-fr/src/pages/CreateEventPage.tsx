@@ -24,7 +24,7 @@ export function CreateEventPage () {
         </Button>
       </div>
 
-      <CreateEventForm ref={formRef} date={date instanceof Date? date: undefined} />
+      <CreateEventForm ref={formRef} date={date instanceof Date? date: undefined} onExit={() => navigate(-1)}/>
     </div>
   )
 }

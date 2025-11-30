@@ -10,16 +10,19 @@ import type {CategoryType, EventCreateType, RepeatType} from "@/types";
 import {useCalendar} from "@/hooks/useCalendar.ts";
 import MiniMapPicker from "@/components/MiniMapPicker.tsx";
 import {POST} from "@/utils/api.ts";
+import {useEvent} from "@/hooks/useEvent.ts";
 
 interface CreateEventFormProps {
   ref: Ref<HTMLFormElement>;
   date?: Date;
+  onExit?: () => void;
 }
 
-export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
+export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
   const [isRepeat, setIsRepeat] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const {getCategories, getCalendarId, loading} = useCalendar();
+  const {addEvents} = useEvent();
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -40,23 +43,17 @@ export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
 
   const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
-    // check dates input
-    if (!startDate || !endDate) {
-      toast.error("Please enter a valid start and end dates");
-      return;
-    }
-
     const form = new FormData(e.currentTarget);
 
     // check inputs
     const title = form.get("title");
     const description = form.get("description");
 
-    if (!title || !description) {
-      toast.error("Please enter a valid title and description");
-      return;
-    }
+    if (!title?.toString().trim() || !description?.toString().trim())
+      return toast.error("Please enter a valid title and description");
+
+    if (!startDate || !endDate || startDate > endDate)
+      return toast.error("Please enter a valid start and end dates");
 
     const data: EventCreateType = {
       title: title as string,
@@ -67,24 +64,41 @@ export const CreateEventForm = ({ref, date}: CreateEventFormProps) => {
       address: address
     }
 
+    if (reminderDate) data.reminder = reminderDate.toISOString();
+
     if (isRepeat) {
       // check values
       const period = form.get("period");
-      const startRepeatDate = form.get("startRepeatDate");
-      const endRepeatDate = form.get("endRepeatDate");
+      const startRepeatDateStr = form.get("startRepeatDate");
+      const endRepeatDateStr = form.get("endRepeatDate");
 
-      if (!period || !startRepeatDate || !endRepeatDate) {
-        toast.error("Please enter a valid repeat data");
-        return;
-      }
+      if (!period || !startRepeatDateStr || !endRepeatDateStr)
+        return toast.error("Please enter a valid repeat data");
+
+      const startRepeatDate = new Date(startRepeatDateStr as string)
+      const endRepeatDate = new Date(endRepeatDateStr as string);
+
+      if (startRepeatDate > endRepeatDate)
+        return toast.error("Please enter a valid repeat data");
 
       data.period = period as string as RepeatType;
-      data.startRepeatDate = (startRepeatDate as unknown as Date).toISOString();
-      data.endRepeatDate = (endRepeatDate as unknown as Date).toISOString();
+      data.startRepeatDate = startRepeatDate.toISOString();
+      data.endRepeatDate = endRepeatDate.toISOString();
     }
 
     try {
-      await POST(`calendar/${getCalendarId()}/event`, data);
+      const result = await POST(`calendar/${getCalendarId()}/events/`, data);
+      if (!result.success) return toast.error("Something went wrong");
+      addEvents([{
+        id: result.data.id,
+        calendarId: getCalendarId(),
+        title: data.title,
+        startDate: startDate,
+        endDate: endDate,
+        color: result.data.color,
+      }])
+      if (onExit) onExit();
+      toast.success("Event created");
     } catch (error) {
       console.log(error);
       toast.error("Ups. Something went wrong, please try again later");

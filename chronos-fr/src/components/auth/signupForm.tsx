@@ -8,25 +8,14 @@ import {
   // FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 // custom imports
 import { Link } from "react-router-dom"
 
 import type {SignupFormType} from "@/types";
-import {useEffect, useState} from "react";
-import AvatarUpload from "@/components/avatarUpload.tsx";
-
-type CountryType = {
-  name: string,
-  flag: string,
-}
+import { useState} from "react";
+import AvatarUpload from "@/components/AvatarUpload.tsx";
+import CountrySelect from "@/components/CountrySelect";
 
 interface SignupFormProps {
   className?: string;
@@ -39,19 +28,6 @@ interface SignupFormProps {
 
 export function SignupForm({className="", photo, setPhoto, preview, setPreview, onSubmit}: SignupFormProps) {
   const [country, setCountry] = useState<string>("");
-  const [countries, setCountries] = useState<CountryType[]>([]);
-
-  useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name,cca2")
-      .then(res => res.json())
-      .then(countries => {
-        const list = countries.map((c: any) => ({
-          name: c.name.common,
-          flag: `https://flagcdn.com/w40/${c.cca2.toLowerCase()}.png`
-        }));
-        setCountries(list);
-      });
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -120,24 +96,11 @@ export function SignupForm({className="", photo, setPhoto, preview, setPreview, 
             <Input id="confirm" type="password" required />
             <FieldDescription>Please confirm your password.</FieldDescription>
           </Field>
-          <Select onValueChange={(country) => setCountry(country)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Theme" />
-            </SelectTrigger>
-            <SelectContent>
-              {countries.map((country) => (
-                <SelectItem key={country.name} value={country.name}>
-                      <img
-                        src={country.flag}
-                        alt={country.name}
-                        width={24}
-                        height={20}
-                      />
-                      <span>{country.name}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CountrySelect
+            value={country}
+            onChange={setCountry}
+            placeholder="Select your country"
+          />
           <Field >
             <Button type="submit" className="bg-button hover:bg-button-accent">Create Account</Button>
           </Field>

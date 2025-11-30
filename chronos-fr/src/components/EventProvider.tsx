@@ -1,20 +1,36 @@
 import React, {type ReactNode, useEffect, useState} from "react";
-import type {EventPreview} from "@/types";
+import type {EventPreview, RepeatType} from "@/types";
 
 import {EventContext} from "@/contexts/EventContext.tsx";
 
 import {useCalendar} from "@/hooks/useCalendar.ts";
 import {useUser} from "@/hooks/useUser.ts";
 import {getCountryCodeByName} from "@/utils/country.ts";
+import {GET} from "@/utils/api.ts";
 
 interface Props {
   children: ReactNode;
 }
 
+type EventFromServerType = {
+  id: string;
+  calendarId: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  color: string;
+  isRepeat: boolean;
+  startRepeatDate?: string;
+  endRepeatDate?: string;
+  period: RepeatType;
+}
+
 const EventProvider: React.FC<Props> = ({ children }: Props) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [events, setEvents] = useState<Record<string, EventPreview[]>>({})
   const {getUser} = useUser();
   const {getCalendarId, startDay} = useCalendar();
+  const prevStartDayRef = React.useRef<Date | null>(startDay);
 
   useEffect(() => {
     console.log("this log is needed to render event provider. I don't know why and i don't give a fuck");
@@ -22,7 +38,6 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
 
   // default calendar events
   useEffect(() => {
-    console.log("it's working");
     const user = getUser();
     console.log(user);
 
@@ -62,9 +77,94 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
 
   }, [getUser()]);
 
+  const formatEvents = (events: EventFromServerType[]) => {
+    const expanded: EventPreview[] = [];
+
+    const pushEvent = (event: EventFromServerType) => {
+      expanded.push({
+        id: event.id,
+        calendarId: event.calendarId,
+        title: event.title,
+        color: event.color,
+        startDate: new Date(event.startDate),
+        endDate: new Date(event.endDate),
+      })
+    }
+
+    for (const event of events) {
+      if (!event.isRepeat || !event.period || !event.startRepeatDate || !event.endRepeatDate) {
+        pushEvent(event);
+        continue;
+      }
+
+      const start = new Date(event.startDate);
+      const end = new Date(event.endDate);
+      const delta = end.getTime() - start.getTime();
+
+      const cur = new Date(event.startRepeatDate);
+      const repeatEnd = new Date(event.endRepeatDate);
+
+      while (cur <= repeatEnd) {
+        const newEnd = new Date(cur);
+        newEnd.setTime(newEnd.getTime() + delta);
+        const newEvent = {
+          ...event,
+          startDate: new Date(cur).toISOString(),
+          endDate: newEnd.toISOString(),
+        }
+        pushEvent(newEvent);
+        if (event.period === "everyday") cur.setDate(cur.getDate() + 1);
+        else if (event.period === "everyweek") cur.setDate(cur.getDate() + 7);
+        else if (event.period === "everymonth") cur.setMonth(cur.getMonth() + 1);
+        else if (event.period === "everyyear") cur.setFullYear(cur.getFullYear() + 1);
+      }
+    }
+    return expanded;
+  }
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const result = await GET(`calendar/${getCalendarId()}/events?year=${startDay.getFullYear()}`);
+      console.log(result);
+      if (!result.success) {
+        setLoading(false);
+        return;
+      }
+      console.log(result.data);
+      const formattedEvents = formatEvents(result.data);
+      console.log(formattedEvents);
+      addEvents(formattedEvents);
+    } catch (err: any) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (prevStartDayRef.current && startDay && prevStartDayRef.current.getFullYear() < startDay.getFullYear())
+      if (getCalendarId() !== "0") fetchEvents();
+    prevStartDayRef.current = startDay;
+  }, [startDay]);
+
+  useEffect(() => {
+    if (getCalendarId() !== "0") fetchEvents();
+  }, [getCalendarId()]);
+
   const getForDay = (date: Date): EventPreview[] => {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23,59,59,999);
+
     const forCalendar = events[getCalendarId()] || [];
-    return forCalendar.filter(e => e.startDate <= date && e.endDate >= date);
+    const forDay = forCalendar.filter(
+      e => e.startDate <= endOfDay && e.endDate >= startOfDay
+    );
+
+    console.log(forDay);
+    return forDay;
   };
 
   const getForWeek = (): EventPreview[] => {
@@ -93,9 +193,10 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
         if (!copy[calendarId]) copy[calendarId] = [];
 
         const exists = copy[calendarId].some(existing =>
-          existing.title === ev.title &&
+          existing.id ===ev.id ||
+          (existing.title === ev.title &&
           existing.startDate.getTime() === ev.startDate.getTime() &&
-          existing.endDate.getTime() === ev.endDate.getTime()
+          existing.endDate.getTime() === ev.endDate.getTime())
         );
 
         if (!exists) {
@@ -107,7 +208,7 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
     });
   };
 
-  return <EventContext.Provider value={{getForDay, getForWeek, getForMonth, getForYear, addEvents, getAll}}>{children}</EventContext.Provider>
+  return <EventContext.Provider value={{loading, getForDay, getForWeek, getForMonth, getForYear, addEvents, getAll}}>{children}</EventContext.Provider>
 }
 
 export default EventProvider;

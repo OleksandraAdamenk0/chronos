@@ -3,7 +3,16 @@ import { Document, Schema, Model, model } from "mongoose";
 import {UserDBType} from "../types";
 
 // type for the document
-export interface IUser extends Document, UserDBType {}
+export interface IUser extends Document, UserDBType {
+  email: string;
+  fullName: string;
+  avatar: string;
+  country: string;
+  password: string;
+  confirmed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Schema
 const userSchema: Schema<IUser>  = new Schema({

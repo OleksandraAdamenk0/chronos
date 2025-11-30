@@ -14,6 +14,6 @@ export const handleAvatarUpload = (req: Request, res: Response): void => {
   }
 
   // return path to the client
-  const path = `${HOST}${PORT}/public/avatar/${file.filename}`;
+  const path = `${HOST}${PORT}/avatar/${file.filename}`;
   res.json({ success: true, data: path });
 }

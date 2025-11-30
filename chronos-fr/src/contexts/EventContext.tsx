@@ -4,6 +4,7 @@ import {createContext} from 'react';
 import type {EventPreview} from "@/types";
 
 type EventContextType = {
+  loading: boolean;
   getAll: () => EventPreview[];
   getForDay: (date: Date) => EventPreview[];
   getForWeek: (date: Date) => EventPreview[];

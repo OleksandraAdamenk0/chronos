@@ -6,7 +6,7 @@ interface Props {
   setPreview: (photo: string) => void;
   setFile: (file: File) => void;
   size?: number;
-  variant?: "small" | "large";
+  variant?: "small" | "large" | "all";
 }
 
 const AvatarUpload = ({ setFile, preview, setPreview, size, variant = "small" }: Props) => {
@@ -53,23 +53,48 @@ const AvatarUpload = ({ setFile, preview, setPreview, size, variant = "small" }:
     );
   }
 
-  // default / small
-  return (
-    <div className="bg-muted relative lg:hidden h-fit overflow-hidden rounded-full">
-      <img
-        src={preview}
-        alt="Avatar"
-        style={{ width: size ?? "100%", height: size ?? "100%" }}
-        className="object-cover"
-      />
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleChange}
-        className="absolute inset-0 opacity-0 cursor-pointer"
-      />
-    </div>
-  );
+  // small
+  if (variant === "small") {
+    return (
+      <div className="bg-muted relative lg:hidden h-fit overflow-hidden rounded-full aspect-square">
+        <img
+          src={preview}
+          alt="Avatar"
+          style={{ width: size ?? "100%"}}
+          className="object-cover"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </div>
+    );
+  }
+
+  if (variant === "all") {
+    return (
+      <div
+        className="bg-muted relative overflow-hidden rounded-full aspect-square"
+        style={{ width: size ?? "60%" }}
+      >
+        <img
+          src={preview}
+          alt="Avatar"
+          className="w-full h-full object-cover"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          className="absolute inset-0 opacity-0 cursor-pointer"
+        />
+      </div>
+
+    )
+  }
+
 };
 
 export default AvatarUpload;

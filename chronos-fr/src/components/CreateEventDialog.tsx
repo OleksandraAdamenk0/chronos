@@ -20,7 +20,7 @@ export function CreateEventDialog({open, setOpen}: CreateEventFormProps) {
           <DialogTitle>Create new Event</DialogTitle>
         </DialogHeader>
 
-        <CreateEventForm ref={formRef}/>
+        <CreateEventForm ref={formRef} onExit={() => setOpen(false)}/>
 
         <DialogFooter>
           <DialogClose asChild>
