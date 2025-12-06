@@ -11,7 +11,7 @@ import ColorPicker from "@/components/colorPicker.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {PATCH} from "@/utils/api.ts";
 import {toast} from "sonner";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useCalendar} from "@/hooks/useCalendar.ts";
 import type {CalendarPreviewType} from "@/types";
 
@@ -22,11 +22,20 @@ interface Props {
 }
 
 export const ChangeCalendar = ({open, setOpen, calendar}: Props) => {
-  const {changeCalendar} = useCalendar();
+  const {changeCalendar, getPermissions} = useCalendar();
   const [color, setColor] = useState(calendar.color);
+
+  useEffect(() => {
+    console.log(getPermissions());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (calendar.id === "0") {
+      toast.warning("You can not edit this calendar");
+      setOpen(false);
+      return;
+    }
 
     const form = e.currentTarget
     const name = (form.name as unknown as HTMLInputElement).value;
@@ -36,7 +45,7 @@ export const ChangeCalendar = ({open, setOpen, calendar}: Props) => {
         toast.error(result.error || "Something went wrong");
         return;
       }
-      changeCalendar(result.data.id, {color: color, name: name, type: "shared"})
+      changeCalendar(result.data.id, {color: color, name: name ?? calendar.name, type: "shared"})
       setOpen(false);
     } catch (error: any) {
       console.log(error);
@@ -55,10 +64,12 @@ export const ChangeCalendar = ({open, setOpen, calendar}: Props) => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" name="name" defaultValue={calendar.name} />
-            </div>
+            {getPermissions().manageCalendar && (
+              <div className="grid gap-3">
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" name="name" defaultValue={calendar.name} />
+              </div>
+            )}
             <div className="grid gap-3">
               <Label htmlFor="color">Color</Label>
               <ColorPicker value={color} onChange={setColor} />
@@ -66,7 +77,7 @@ export const ChangeCalendar = ({open, setOpen, calendar}: Props) => {
           </div>
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
-              <Button type="submit" variant="secondary">Create</Button>
+              <Button type="submit" variant="secondary">Save</Button>
             </DialogClose>
             <DialogClose asChild>
               <Button onClick={() => setOpen(false)}>Close</Button>

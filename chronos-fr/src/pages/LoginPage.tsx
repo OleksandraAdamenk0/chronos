@@ -6,7 +6,7 @@ import type {LoginFormType} from "@/types";
 
 // components
 import LoginForm from "@/components/auth/loginForm.tsx";
-import {ModeToggle} from "@/components/mode-toggle.tsx";
+import {ModeToggle} from "@/components/theme/mode-toggle.tsx";
 import { toast } from "sonner";
 
 // services

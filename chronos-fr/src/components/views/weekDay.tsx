@@ -1,7 +1,18 @@
 import React, {useEffect, useRef, useState} from "react";
 import type {EventPreview} from "@/types";
 
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@/components/ui/context-menu";
+
 import {useEvent} from "@/hooks/useEvent.ts";
+import {ImageDown, Trash2} from "lucide-react";
+import {useCalendar} from "@/hooks/useCalendar.ts";
+import {toast} from "sonner";
+import {DELETE} from "@/utils/api.ts";
 
 interface WeekDayProps {
   day: Date;
@@ -9,7 +20,14 @@ interface WeekDayProps {
   onEventClick?: (ev: EventPreview) => void;
 }
 
-const layoutEvents = (events: EventPreview[], hourHeight: number) => {
+type PositionedEventType = EventPreview & {
+  top: number;
+  left: number;
+  height: number;
+  width: number;
+}
+
+const layoutEvents = (events: EventPreview[], hourHeight: number): PositionedEventType[] => {
   const sorted = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   const lanes: EventPreview[][] = [];
 
@@ -55,11 +73,13 @@ const layoutEvents = (events: EventPreview[], hourHeight: number) => {
     const startheight = (start.getHours() * 60 + start.getMinutes()) / 60 * hourHeight;
     const duration = (end.getTime() - start.getTime()) / 3600000 * hourHeight || 30;
 
-    return { ev, top: startheight, height: duration, left: `${left}%`, width: `${width}%` };
+    return { ...ev, top: startheight, height: duration, left: left, width: width };
   });
 };
 
 const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
+  const {getCalendarId, getPermissions} = useCalendar();
+  const {deleteEvent} = useEvent();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hourHeight, setHourHeight] = useState(0);
 
@@ -76,6 +96,27 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
     window.addEventListener("resize", calcHeight);
     return () => window.removeEventListener("resize", calcHeight);
   }, []);
+
+  const handleDeleteEvent = async (e: React.MouseEvent<HTMLDivElement, MouseEvent>, event: PositionedEventType) => {
+    e.stopPropagation();
+    if (getCalendarId() === "0" || !(getPermissions().manageEvents)) {
+      toast.warning("You can't delete events in this calendar");
+      return;
+    }
+
+    try {
+      const result = await DELETE(`calendar/${getCalendarId()}/events/${event.id}`);
+      if (!result.success) {
+        toast.error("Something went wrong");
+        return;
+      }
+      deleteEvent(event);
+      toast.success("Event succesfully deleted!");
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.error || "Something went wrong");
+    }
+  }
 
   return (
     <div className="flex flex-col bg-card rounded-md border border-border flex-1 overflow-hidden">
@@ -133,31 +174,50 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
 
         {/* positioned events */}
         <div className="absolute inset-0">
-          {layoutEvents(getForDay(day), hourHeight).map(({ ev, top, height, left, width }) => (
-            <div
-              key={ev.id}
-              className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
-              style={{
-                position: "absolute",
-                top,
-                left,
-                width,
-                height,
-                border: "1px solid var(--card)",
-                background: "var(--secondary)",
-                overflow: "hidden",
-              }}
-            >
-              <div className="absolute"
-                   style = {{
-                     top: 0,
-                     left: 0,
-                     width: "4px",
-                     height,
-                     background: ev.color || "none"
-                   }}></div>
-              <div className="text-xs font-semibold leading-tight">{ev.title}</div>
-            </div>
+          {layoutEvents(getForDay(day), hourHeight).map((event) => (
+            <ContextMenu key={event.id}>
+              <ContextMenuTrigger asChild>
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log(event);
+                  }}
+                  className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
+                  style={{
+                    position: "absolute",
+                    top: event.top,
+                    left: `${event.left}%`,
+                    width: `${event.width}%`,
+                    height: event.height,
+                    border: "1px solid var(--card)",
+                    background: "var(--secondary)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    className="absolute"
+                    style={{
+                      top: 0,
+                      left: 0,
+                      width: "4px",
+                      height: event.height,
+                      background: event.color || "none",
+                    }}
+                  ></div>
+                  <div className="text-xs font-semibold leading-tight">{event.title}</div>
+                </div>
+              </ContextMenuTrigger>
+
+              <ContextMenuContent className="w-40">
+                <ContextMenuItem onClick={() => console.log("Edit", event)}>
+                  <ImageDown className="mr-2 h-4 w-4" />Change
+                </ContextMenuItem>
+
+                <ContextMenuItem onClick={(e) => handleDeleteEvent(e, event)}>
+                  <Trash2 className="mr-2 h-4 w-4" />Delete
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           ))}
         </div>
       </div>

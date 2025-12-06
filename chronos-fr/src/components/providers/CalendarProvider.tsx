@@ -19,11 +19,15 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log("categories changed: ", categories)
+  }, [categories]);
+
+  useEffect(() => {
     const fetchCurrentCalendar = async () => {
       try {
         setLoading(true);
         const result = await GET(`calendar/${calendarId}`);
-        console.log(result);
+        console.log("current: ", result);
         setCurrentCalendar(result.data);
       } catch (err: any) {
         console.error(err);
@@ -32,7 +36,7 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
       }
     }
 
-    const fetchCateegories = async () => {
+    const fetchCategories = async () => {
       try {
         setLoading(true);
         const result = await GET(`calendar/${calendarId}/categories`);
@@ -46,8 +50,7 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
     }
 
     if (calendarId === "0") return;
-    fetchCurrentCalendar();
-    fetchCateegories();
+    fetchCurrentCalendar().then(() => fetchCategories());
   }, [calendarId]);
 
   useEffect(() => {
@@ -104,6 +107,7 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
 
   const deleteCalendar = (calendarId: string): void => {
     setCalendars(calendars.filter(calendar => calendar.id !== calendarId));
+    setCalendarId("0");
   }
 
   const changeCalendar = (

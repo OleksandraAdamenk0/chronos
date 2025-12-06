@@ -10,7 +10,7 @@ import {Label} from "@/components/ui/label.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {POST} from "@/utils/api.ts";
 import {toast} from "sonner";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import type {CalendarPreviewType} from "@/types";
 import { Checkbox } from "@/components/ui/checkbox"
 import {validateEmail} from "@/utils/validation.ts";
@@ -31,12 +31,20 @@ export const ShareCalendar = ({open, setOpen, calendar}: Props) => {
     setLink(null);
   }
 
+  useEffect(() => {
+    if (open && calendar.id === "0") {
+      toast.warning("You can not share this calendar");
+      closeDialog();
+    }
+  }, [open]);
+
   const readPermissions = (form: EventTarget & HTMLFormElement) => {
+    console.log(form.calendar[0]);
     return  {
-      manageCalendar: Boolean(form.calendar[0].ariaChecked),
-      manageCategories: Boolean(form.categories[0].ariaChecked),
-      manageParticipants: Boolean(form.participants[0].ariaChecked),
-      manageEvents: Boolean(form.events[0].ariaChecked)
+      manageCalendar: form.calendar[0].ariaChecked === "true",
+      manageCategories: form.categories[0].ariaChecked === "true",
+      manageParticipants: form.participants[0].ariaChecked === "true",
+      manageEvents: form.events[0].ariaChecked === "true",
     }
   }
 
@@ -44,7 +52,7 @@ export const ShareCalendar = ({open, setOpen, calendar}: Props) => {
     e.preventDefault()
     const form = e.currentTarget
     const permissions = readPermissions(form);
-
+    console.log("permissions", permissions)
     try {
       const result = await POST(`invite/${calendar.id}/link`, {permissions});
       if (!result.success) {

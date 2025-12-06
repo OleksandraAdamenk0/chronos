@@ -21,7 +21,7 @@ interface CreateEventFormProps {
 export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
   const [isRepeat, setIsRepeat] = useState(false);
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const {getCategories, getCalendarId, loading} = useCalendar();
+  const {getCategories, getCalendarId, loading, getPermissions} = useCalendar();
   const {addEvents} = useEvent();
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -43,6 +43,11 @@ export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
 
   const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!getPermissions().manageEvents) {
+      toast.warning("You do not have permissions to create events");
+      if (onExit) onExit();
+      return;
+    }
     const form = new FormData(e.currentTarget);
 
     // check inputs
@@ -105,6 +110,7 @@ export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
     }
   }
 
+  console.log("categories: ", categories)
 
   return (
     <form ref={ref} onSubmit={handleCreateEvent} className="w-full">
@@ -171,7 +177,7 @@ export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map(c => (
+              {categories && categories.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>

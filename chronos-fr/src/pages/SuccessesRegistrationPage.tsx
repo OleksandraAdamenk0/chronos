@@ -2,7 +2,7 @@ import React from "react";
 import {useLocation} from "react-router-dom";
 
 // components
-import {ModeToggle} from "@/components/mode-toggle.tsx";
+import {ModeToggle} from "@/components/theme/mode-toggle.tsx";
 import {Card, CardContent} from "@/components/ui/card.tsx";
 
 const SuccessesRegistrationPage: React.FC = () => {

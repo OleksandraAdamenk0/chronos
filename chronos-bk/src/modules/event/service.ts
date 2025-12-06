@@ -1,7 +1,6 @@
 import {CreateEventDataType} from "../../types";
 import eventModel, {IEvent} from "../../models/EventModel";
 import categoryModel from "../../models/CategoryModel";
-import calendarModel from "../../models/CalendarModel";
 import calendarUserModel from "../../models/CalendarUserModel";
 
 export const createEventService = async (authorId: string, calendarId: string, data: CreateEventDataType) => {
@@ -68,4 +67,9 @@ export const getEventColorService = async (event: IEvent): Promise<string> => {
     if (!calendarUser) throw new Error(`Record about user with id ${event.authorId} and calendar with id ${event.calendarId} not found`);
     return calendarUser.color;
   }
+}
+
+export const deleteEventService = async (eventId: string): Promise<void> => {
+  const result = await eventModel.findByIdAndDelete(eventId);
+  if (!result) throw new Error(`Event with id ${eventId} not found`);
 }

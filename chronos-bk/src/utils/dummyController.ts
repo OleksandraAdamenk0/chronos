@@ -2,7 +2,7 @@ import {Request, Response } from 'express';
 
 // dummy function to create routes quickly
 const dummy = (req: Request, res: Response) => {
-  res.status(200).json({});
+  res.status(200).json({success: true, data: req.body});
 }
 
 export default  dummy;

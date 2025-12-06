@@ -2,6 +2,7 @@ import calendarModel from "../../models/CalendarModel";
 import calendarUserModel from "../../models/CalendarUserModel";
 import categoryModel from "../../models/CategoryModel";
 import {PermissionsType} from "../../types";
+import eventModel from "../../models/EventModel";
 
 export const createCalendarService = async (name: string, type: string, authorId: string) => {
   const result = await calendarModel.insertOne({name: name, type: type, authorId: authorId});
@@ -67,11 +68,12 @@ export const getCalendarCategoriesService = async (id: string) => {
 
 export const deleteCalendarService = async (calendarId: string) => {
   await calendarModel.findByIdAndDelete(calendarId).exec();
+  await calendarUserModel.deleteMany({ calendarId: calendarId}).exec();
+  await eventModel.deleteMany({ calendarId: calendarId }).exec();
 }
 
 export const deleteUserFromCalendarService = async (userId: string, calendarId: string) => {
   const rowResult = await calendarUserModel.find({userId: userId, calendarId: calendarId}).exec();
-  console.log(rowResult)
   const record = rowResult[0];
   if (!record) throw new Error("No recording about this user and calendar was found");
   await calendarUserModel.findByIdAndDelete(record.id).exec();

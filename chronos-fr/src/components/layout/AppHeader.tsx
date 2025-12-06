@@ -1,7 +1,7 @@
 // AppHeader.tsx
 import React from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ModeToggle } from "@/components/mode-toggle.tsx";
+import { ModeToggle } from "@/components/theme/mode-toggle.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useCalendar } from "@/hooks/useCalendar.ts";

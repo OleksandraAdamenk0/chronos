@@ -208,7 +208,19 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
     });
   };
 
-  return <EventContext.Provider value={{loading, getForDay, getForWeek, getForMonth, getForYear, addEvents, getAll}}>{children}</EventContext.Provider>
+  const deleteEvent = (event: EventPreview): void => {
+    setEvents(prev => {
+      const copy = { ...prev };
+      if (!copy[event.calendarId]) return copy;
+
+      return {
+        ...copy,
+        [event.calendarId]: copy[event.calendarId].filter(ev => ev.id !== event.id)
+      };
+    });
+  }
+
+  return <EventContext.Provider value={{loading, getForDay, getForWeek, getForMonth, getForYear, addEvents, deleteEvent, getAll}}>{children}</EventContext.Provider>
 }
 
 export default EventProvider;

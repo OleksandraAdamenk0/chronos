@@ -4,7 +4,7 @@ import {register} from "@/services/authService.ts";
 import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
 import {Card, CardContent} from "@/components/ui/card.tsx";
-import {ModeToggle} from "@/components/mode-toggle.tsx";
+import {ModeToggle} from "@/components/theme/mode-toggle.tsx";
 import {useState} from "react";
 import AvatarUpload from "@/components/AvatarUpload.tsx";
 

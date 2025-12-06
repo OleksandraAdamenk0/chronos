@@ -12,6 +12,7 @@ export const invitationLinkService = async (userId: string, calendarId: string, 
   const calendarUser = await calendarUserModel.findOne({userId: userId, calendarId: calendarId}).exec();
   if (!calendarUser) throw new Error("CalendarUser not found");
   if (!calendarUser.permissions.manageParticipants) throw new Error("You don't have the permission to invite people");
+  console.log(permissions);
   const token = generateInviteToken(calendarId, permissions);
   return `${BASEURL}/invite/accept/${token}`;
 }
@@ -27,7 +28,7 @@ export const invitationEmailService = async (userId: string, calendarId: string,
 
 export const acceptInvitationService = async (userId: string, token: string) => {
   const {calendarId, permissions} = await verifyInvitationToken(token);
-  console.log(userId, calendarId);
+  console.log("service: ", userId, calendarId, permissions);
   const exists = await calendarUserModel.findOne({userId, calendarId});
   if (exists) return;
   await calendarUserModel.insertOne({userId: userId, calendarId: calendarId, permissions: permissions, color: "#9A7CC5FF"});

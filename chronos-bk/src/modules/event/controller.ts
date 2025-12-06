@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
-import {createEventService, getEventsService, getEventColorService} from "./service";
+import {createEventService, getEventsService, getEventColorService, deleteEventService} from "./service";
+import {getPermissionsService} from "../calendar/service";
 
 export const createEventController = async (req: Request, res: Response) => {
   // @ts-ignore
@@ -32,4 +33,24 @@ export const getEventsController = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({success: false, error: error.message});
   }
+}
+
+export const deleteEventController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.userId;
+  const calendarId = req.params.calendarId;
+  const eventId = req.params.eventId;
+
+  try {
+    if (!userId || !calendarId || !eventId) return res.status(400).json({success: false, error: "Necessary data weren't provided"});
+    const permissions = await getPermissionsService(userId, calendarId);
+    console.log("userId ", userId, "calendarId: ", calendarId, permissions);
+    if (!permissions || !(permissions.manageEvents)) return res.status(403).json({success: false, error: "You don't have permissions to delete this event."});
+    await deleteEventService(eventId);
+    return res.status(200).json({success: true, data: {}});
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({success: false, error: error.message});
+  }
+
 }

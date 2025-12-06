@@ -10,7 +10,8 @@ type EventContextType = {
   getForWeek: (date: Date) => EventPreview[];
   getForMonth: (date: Date) => EventPreview[];
   getForYear: (date: Date) => EventPreview[];
-  addEvents: (date: EventPreview[]) => void;
+  addEvents: (event: EventPreview[]) => void;
+  deleteEvent: (event: EventPreview) => void;
 };
 
 export const EventContext = createContext<EventContextType | null>(null);

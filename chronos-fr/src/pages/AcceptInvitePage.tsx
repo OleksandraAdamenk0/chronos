@@ -11,7 +11,6 @@ function AcceptInvitePage() {
   const location = useLocation();
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [calendarId, setCalendarId] = useState<string | null>(null);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -31,7 +30,6 @@ function AcceptInvitePage() {
           return;
         }
 
-        setCalendarId(result.data.calendarId);
         setStatus("success");
       } catch (err: any) {
         if (err.status === 401) navigate("/login", {state: {path: location.pathname}});
@@ -79,7 +77,7 @@ function AcceptInvitePage() {
               </p>
 
               <Button
-                onClick={() => navigate(`/calendar/${calendarId}`)}
+                onClick={() => navigate(`/calendar`)}
                 className="w-full"
               >
                 Go to Calendar

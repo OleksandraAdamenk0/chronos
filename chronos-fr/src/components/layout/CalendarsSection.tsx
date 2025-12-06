@@ -14,7 +14,7 @@ import {ShareCalendar} from "@/components/dialogs/ShareCalendar.tsx";
 
 
 export const CalendarsSection = () => {
-  const {getCalendars, getCalendarId, setCalendarId, deleteCalendar} = useCalendar();
+  const {getCalendars, getCalendarId, setCalendarId, deleteCalendar, getPermissions} = useCalendar();
   const [open, setOpen] = useState<boolean>(false);  // section
   const [changeOpen, setChangeOpen] = useState<boolean>(false);
   const [shareOpen, setShareOpen] = useState<boolean>(false);
@@ -42,6 +42,8 @@ export const CalendarsSection = () => {
     setShareOpen(true);
     setSelectedCalendar(calendar);
   }
+
+  console.log(getPermissions())
 
   return (
     <div>
@@ -75,9 +77,11 @@ export const CalendarsSection = () => {
                     {index < getCalendars().length - 1 && (<Separator/>)}
                   </ContextMenuTrigger>
                   <ContextMenuContent>
-                    <ContextMenuItem onClick={() => openShareDialog(calendar)}><Share2 className="mr-2 h-4 w-4" />Share</ContextMenuItem>
+                    {getPermissions().manageParticipants && (
+                      <ContextMenuItem onClick={() => openShareDialog(calendar)}><Share2 className="mr-2 h-4 w-4" />Share</ContextMenuItem>
+                    )}
                     <ContextMenuItem onClick={() => openChangeDialog(calendar)}><ImageDown className="mr-2 h-4 w-4" />Change</ContextMenuItem>
-                    <ContextMenuItem onClick={() => handleDeleteCalendar(calendar)}><Trash2 className="mr-2 h-4 w-4 text-red-500" />Delete</ContextMenuItem>
+                    <ContextMenuItem onClick={() => handleDeleteCalendar(calendar)}><Trash2 className="mr-2 h-4 w-4" />Delete</ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
               )})}
