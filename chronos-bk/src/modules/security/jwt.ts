@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import {PermissionsType} from "../../types";
 
 dotenv.config();
 
@@ -8,7 +9,9 @@ const JWT_SECRET = process.env.JWT_ACCESS || 'your_super_secret';
 const JWT_REFRESH_EXPIRATION = '7d';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH || 'your_refresh_secret';
 const JWT_MAIL_SECRET = process.env.JWT_MAIL || 'your_mail_secret';
-const JWT_MAIL_EXPIRATION = "24h"
+const JWT_MAIL_EXPIRATION = "24h";
+const JWT_INVITE_SECRET = process.env.JWT_INVITE || 'your_invite_secret';
+const JWT_INVITE_EXPIRATION = '7d'
 
 // console.log("JWT_SECRET:", JWT_SECRET);
 // console.log("JWT_REFRESH_SECRET:", JWT_REFRESH_SECRET);
@@ -23,6 +26,16 @@ export function generateRefreshToken(id: number) {
 
 export function generateEmailToken(id: number) {
   return jwt.sign({ id: id }, JWT_MAIL_SECRET, { expiresIn: JWT_MAIL_EXPIRATION });
+}
+
+export function generateInviteToken(calendarId: string, permissions: PermissionsType): string {
+  return jwt.sign({calendarId, permissions}, JWT_INVITE_SECRET as string, { expiresIn: JWT_INVITE_EXPIRATION });
+}
+
+export const verifyInvitationToken = async (token: string) => {
+  if (!token) throw new Error("Token is required");
+  const {calendarId, permissions} = jwt.verify(token, JWT_INVITE_SECRET as string) as {calendarId: string, permissions: PermissionsType};
+  return {calendarId, permissions};
 }
 
 export const verifyEmailToken = (token: string): { id: number } => {

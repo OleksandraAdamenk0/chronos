@@ -114,7 +114,7 @@ export const UserInfo: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit dialog */}
+      {/* Edit dialogs */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>

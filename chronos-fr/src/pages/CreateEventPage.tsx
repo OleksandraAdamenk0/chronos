@@ -4,7 +4,7 @@ import {useRef} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 
 
-export function CreateEventPage () {
+function CreateEventPage () {
   const navigate = useNavigate();
   const location = useLocation();
   const date = location.state?.date;
@@ -28,3 +28,5 @@ export function CreateEventPage () {
     </div>
   )
 }
+
+export default CreateEventPage;

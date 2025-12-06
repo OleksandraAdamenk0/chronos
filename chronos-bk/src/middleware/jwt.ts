@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import {generateAccessToken, verifyAccessToken, verifyRefreshToken} from "../utils/jwt";
+import {generateAccessToken, verifyAccessToken, verifyRefreshToken} from "../modules/security/jwt";
 import userModel from "../models/UserModel";
 
 

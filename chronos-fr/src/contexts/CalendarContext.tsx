@@ -14,6 +14,7 @@ type CalendarContextType = {
   getCategories: () => CategoryType[];
   addCalendars: (calendars: CalendarPreviewType[]) => void;
   deleteCalendar: (id: string) => void;
+  changeCalendar: (id: string, data: Omit<CalendarPreviewType, "id">) => void;
   getStartWeek: () => Date;
   loading: boolean;
 };

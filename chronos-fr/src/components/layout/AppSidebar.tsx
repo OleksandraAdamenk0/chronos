@@ -9,47 +9,21 @@ import { Calendar } from "@/components/ui/calendar";
 import {Separator} from "@/components/ui/separator.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label";
-
 import {useCalendar} from "@/hooks/useCalendar.ts";
-
-import { FaCaretLeft } from "react-icons/fa6";
 import ColorPicker from "@/components/colorPicker.tsx";
-import {DELETE, POST} from "@/utils/api.ts";
-import {toast} from "sonner";
-import {CreateEventDialog} from "@/components/CreateEventDialog.tsx";
-import type {CalendarPreviewType, CategoryType} from "@/types";
-
-import { Share2, ImageDown, Trash2 } from "lucide-react";
-
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu"
+import {CreateEvent} from "@/components/dialogs/CreateEvent.tsx";
+import type {CategoryType} from "@/types";
 import {useUser} from "@/hooks/useUser.ts";
+import {CalendarsSection} from "@/components/layout/CalendarsSection.tsx";
 
-
-// function getContrastColor(hexColor: string) {
-//   const c = hexColor.charAt(0) === '#' ? hexColor.substring(1) : hexColor;
-//
-//   const r = parseInt(c.substring(0, 2), 16);
-//   const g = parseInt(c.substring(2, 4), 16);
-//   const b = parseInt(c.substring(4, 6), 16);
-//
-//   const yiq = (r*299 + g*587 + b*114) / 1000;
-//   console.log(yiq >= 128 ? 'black' : 'white')
-//   return yiq >= 128 ? 'black' : 'white';
-// }
 
 export function AppSidebar() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isCalendarsOpen, setIsCalendarsOpen] = useState<boolean>(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState<boolean>(false);
   const [isUsersOpen, setIsUsersOpen] = useState<boolean>(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState<boolean>(false);
   const [color, setColor] = useState("#aabbcc");
-  const {getCalendars, setStartDay, addCalendars, deleteCalendar, getCalendarId, setCalendarId, getPermissions, getCategories} = useCalendar();
+  const {getCalendars, setStartDay, getCalendarId, getPermissions, getCategories} = useCalendar();
   const {logout} = useUser();
 
 
@@ -59,54 +33,12 @@ export function AppSidebar() {
     setSelectedDate(date);
   };
 
-  const handleCreateCalendar = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const form = e.currentTarget
-    const name = (form.name as unknown as HTMLInputElement).value;
-    try {
-      const result = await POST("/calendar/", {name, color});
-      if (!result.success) {
-        toast.error(result.error || "Something went wrong");
-        return;
-      }
-
-      addCalendars([{id: result.data.id, color: color, name: name, type: "shared"}])
-
-    } catch (error: any) {
-      console.log(error);
-      toast.error(error.message || "Something went wrong");
-    }
-    console.log(form);
-  }
-
   const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const name = (form.name as unknown as HTMLInputElement).value;
     const description = (form.description as unknown as HTMLInputElement).value;
     console.log(name, description, color);
-  }
-
-  const handleDeleteCalendar = async (calendar: CalendarPreviewType) => {
-    if (calendar.id === "0") return toast.warning("You can not delete the holidays calendar");
-    try {
-      const result = await DELETE(`calendar/${calendar.id}`);
-      if (!result.success) return toast.error(result.error);
-      else toast.success(result.data.message);
-      deleteCalendar(calendar.id);
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  }
-
-  const handleChangeCalendar = () => {
-    toast.warning("This feature is in development. Try again later.");
-  }
-
-  const handleShareCalendar = () => {
-    toast.warning("This feature is in development. Try again later.");
   }
 
   return (
@@ -122,7 +54,7 @@ export function AppSidebar() {
       <SidebarContent>
         {/*create event*/}
         <SidebarGroup>
-          <CreateEventDialog open={isCreateEventOpen} setOpen={setIsCreateEventOpen}/>
+          <CreateEvent open={isCreateEventOpen} setOpen={setIsCreateEventOpen}/>
           <Button
             className="w-full mb-4"
             onClick={() => setIsCreateEventOpen(true)}
@@ -144,76 +76,7 @@ export function AppSidebar() {
 
         {/*calendars*/}
         <SidebarGroup>
-            <Button variant="outline" className="w-full mb-2" onClick={() => setIsCalendarsOpen(!isCalendarsOpen)}>
-              My Calendars
-            </Button>
-            {isCalendarsOpen && (
-              <div className="w-full bg-accent rounded-md">
-
-                <Dialog>
-                <DialogTrigger className="w-full rounded-md mb-4 p-2 bg-primary text-sm font-semibold text-primary-foreground">
-                  Create calendar
-                </DialogTrigger>
-                  <Separator />
-                <DialogContent>
-                  <form onSubmit={handleCreateCalendar}>
-                    <DialogHeader>
-                      <DialogTitle>New calendar</DialogTitle>
-                      <DialogDescription>
-                        Create a new calendar to keep your plans organized and always at hand.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4">
-                      <div className="grid gap-3">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" name="name" defaultValue="New calendar" />
-                      </div>
-                      <div className="grid gap-3">
-                        <Label htmlFor="color">Color</Label>
-                        <ColorPicker value={color} onChange={setColor} />
-                      </div>
-                    </div>
-                    <DialogFooter className="sm:justify-start">
-                      <DialogClose asChild>
-                        <Button type="submit" variant="secondary">Create</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
-
-                <div className="flex flex-col">
-                  {getCalendars().map((calendar, index) => {
-                    return (
-                      <ContextMenu>
-                        <ContextMenuTrigger>
-                          <div
-                            key={calendar.id}
-                            className={`font-bold py-2 px-6 flex cursor-pointer items-center rounded-md 
-                          ${getCalendarId() === calendar.id ? "justify-between" : "justify-start"}`}
-                            style={{
-                              transition: "background 0.5s"
-                            }}
-                            onMouseEnter={e => (e.currentTarget.style.background = calendar.color)}
-                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                            onClick={() => setCalendarId(calendar.id)}
-                          >
-                            <span className="text-primary">{calendar.name}</span>
-                            {getCalendarId() === calendar.id && <FaCaretLeft className="text-primary" />}
-                          </div>
-                          {index < getCalendars().length - 1 && (<Separator/>)}
-                        </ContextMenuTrigger>
-                        <ContextMenuContent>
-                          <ContextMenuItem onClick={handleShareCalendar}><Share2 className="mr-2 h-4 w-4" />Share</ContextMenuItem>
-                          <ContextMenuItem onClick={handleChangeCalendar}><ImageDown className="mr-2 h-4 w-4" />Change</ContextMenuItem>
-                          <ContextMenuItem onClick={() => handleDeleteCalendar(calendar)}><Trash2 className="mr-2 h-4 w-4 text-red-500" />Delete</ContextMenuItem>
-                        </ContextMenuContent>
-                      </ContextMenu>
-                    )})}
-                </div>
-
-              </div>
-            )}
+          <CalendarsSection/>
         </SidebarGroup>
 
         {/*categories*/}
@@ -255,6 +118,7 @@ export function AppSidebar() {
                         <DialogFooter className="sm:justify-start">
                           <DialogClose asChild>
                             <Button type="submit" variant="secondary">Create</Button>
+                            <Button  variant="secondary">Create</Button>
                           </DialogClose>
                         </DialogFooter>
                       </form>

@@ -106,6 +106,17 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
     setCalendars(calendars.filter(calendar => calendar.id !== calendarId));
   }
 
+  const changeCalendar = (
+    calendarId: string, { color, name, type }: Omit<CalendarPreviewType, "id">): void => {
+    setCalendars(
+      calendars.map(calendar => {
+        if (calendar.id !== calendarId) return calendar;
+        return { id: calendar.id, color, name, type };
+      })
+    );
+  };
+
+
   const getPermissions = (): PermissionsType => {
     if (calendarId === "0" || (!currentCalendar)) return {
       manageEvents: false,
@@ -118,7 +129,7 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
   }
 
   return <CalendarContext.Provider value={{getCalendarId, setCalendarId,
-                                           getView, setView,
+                                           getView, setView, changeCalendar,
                                            startDay, setStartDay,
                                            getCalendars, addCalendars, deleteCalendar,
                                            getCategories, getPermissions,

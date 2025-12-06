@@ -7,19 +7,20 @@ import MainPage from "@/pages/MainPage.tsx";
 import LoginPage from "@/pages/LoginPage.tsx";
 import RegisterPage from "@/pages/RegisterPage.tsx";
 import SuccessesRegistrationPage from "@/pages/SuccessesRegistrationPage.tsx";
-import {CreateEventPage} from "@/pages/CreateEventPage.tsx";
+import CreateEventPage from "@/pages/CreateEventPage.tsx";
+import AcceptInvitePage from "@/pages/AcceptInvitePage.tsx";
 
 
 // components
 import { Toaster } from "@/components/ui/sonner";
 
 // providers
-import CalendarProvider from "@/components/CalendarProvider.tsx";
-import UserProvider from "@/components/UserProvider.tsx";
-import EventProvider from "@/components/EventProvider.tsx";
+import CalendarProvider from "@/components/providers/CalendarProvider.tsx";
+import UserProvider from "@/components/providers/UserProvider.tsx";
+import EventProvider from "@/components/providers/EventProvider.tsx";
 
 import ProtectedRoute from "@/components/ProtectedRoute.tsx";
-import Layout from "@/components/layout.tsx";
+import Layout from "@/components/layout/Layout.tsx";
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
               <Route path="/login" element={<LoginPage/> } />
               <Route path="/register" element={<RegisterPage/> } />
               <Route path="/register/success" element={<SuccessesRegistrationPage/> } />
+              <Route path="/invite/accept/:token" element={<AcceptInvitePage />} />
 
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Layout children={<MainPage/>} />} />

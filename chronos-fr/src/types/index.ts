@@ -48,12 +48,13 @@ export type PermissionsType = {
 // calendar
 export type ViewType = "day" | "week" | "month" | "year" | "events";
 export type RepeatType = "everyday" | "everyweek" | "everymonth" | "everyyear";
+export type CalendarType = "personal" | "shared" | "holiday";
 
 export type CalendarPreviewType = {
   id: string,
   name: string,
   color: string,
-  type: "personal" | "shared" | "holiday"
+  type: CalendarType,
 }
 
 export type CalendarFullType = CalendarPreviewType & {

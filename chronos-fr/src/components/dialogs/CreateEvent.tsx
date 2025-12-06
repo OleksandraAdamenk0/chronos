@@ -9,7 +9,7 @@ interface CreateEventFormProps {
   setOpen: (open: boolean) => void;
 }
 
-export function CreateEventDialog({open, setOpen}: CreateEventFormProps) {
+export function CreateEvent({open, setOpen}: CreateEventFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
 

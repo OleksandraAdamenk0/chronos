@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import {
   createCalendarService, createCalendarUserService, getAllCalendarsService,
   getCalendarCategoriesService, getCalendarColorService, getCalendarService, getPermissionsService,
-  deleteCalendarService, deleteUserFromCalendarService
+  deleteCalendarService, deleteUserFromCalendarService, changeCalendarService, changeCalendarUserService
 } from "./service";
 import {PermissionsType} from "../../types";
 
@@ -33,9 +33,9 @@ export const getAllCalendarsController = async (req: Request, res: Response) => 
   const userId = req.userId;
   try {
     const calendars = await getAllCalendarsService(userId);
-    const fullCalendars = await Promise.all(calendars.map(async calendar => { return {...calendar, color: await getCalendarColorService(userId, calendar.id)}}))
-    return res.status(200).send({success: true, data: fullCalendars});
+    return res.status(200).send({success: true, data: calendars});
   } catch (error: any) {
+    console.log(error)
     return res.status(500).send({success: false, error: error?.message || undefined});
   }
 }
@@ -74,5 +74,20 @@ export const deleteCalendarController = async (req: Request, res: Response) => {
     console.error(error);
     return res.status(500).send({success: false, error: error?.message || "Something went wrong"});
   }
+}
 
+export const changeCalendarController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.userId;
+  const calendarId = req.params.id;
+  const {name, color} = req.body;
+  if (!calendarId) return res.status(400).send({success: false, error: "Calendar id was not found"});
+  try {
+    await changeCalendarService(calendarId, name, "shared", userId);
+    await changeCalendarUserService(userId, calendarId, color);
+    return res.status(201).send({success: true, data: {id: calendarId}});
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).send({error: error?.message || undefined});
+  }
 }

@@ -2,7 +2,6 @@ import calendarModel from "../../models/CalendarModel";
 import calendarUserModel from "../../models/CalendarUserModel";
 import categoryModel from "../../models/CategoryModel";
 import {PermissionsType} from "../../types";
-import CalendarUserModel from "../../models/CalendarUserModel";
 
 export const createCalendarService = async (name: string, type: string, authorId: string) => {
   const result = await calendarModel.insertOne({name: name, type: type, authorId: authorId});
@@ -14,14 +13,18 @@ export const createCalendarUserService = async (userId: string, calendarId: stri
 }
 
 export const getAllCalendarsService = async (id: string) => {
-  const rowResult = await calendarModel.find({authorId: id}).exec();
-  const result = rowResult.map(c => {
+  const rowResult = await calendarUserModel.find({userId: id}).exec();
+  const result = await Promise.all(rowResult.map(async c => {
+    const calendar = await calendarModel.findById(c.calendarId).exec();
+    if (!calendar) throw new Error("Calendar not found");
     return {
-      id: c.id,
-      name: c.name,
-      type: c.type,
+      id: c.calendarId,
+      name: calendar.name,
+      type: calendar.type,
+      color: c.color
     }
-  });
+  }));
+  console.log(result);
   return result;
 }
 
@@ -72,4 +75,16 @@ export const deleteUserFromCalendarService = async (userId: string, calendarId: 
   const record = rowResult[0];
   if (!record) throw new Error("No recording about this user and calendar was found");
   await calendarUserModel.findByIdAndDelete(record.id).exec();
+}
+
+export const changeCalendarService = async (id: string, name: string, type: string, authorId: string) => {
+  const result = await calendarModel.updateOne({_id: id}, {name: name, type: type, authorId: authorId}).exec();
+  if (result.matchedCount === 0) throw new Error("Calendar not found");
+}
+
+export const changeCalendarUserService = async (userId: string, calendarId: string, color: string, permissions: PermissionsType | undefined = undefined) => {
+  const updateData: any = { color };
+  if (permissions) updateData.permissions = permissions;
+  const result = await calendarUserModel.updateOne({calendarId: calendarId, userId: userId}, updateData).exec();
+  if (result.matchedCount === 0) throw new Error("Calendar not found");
 }

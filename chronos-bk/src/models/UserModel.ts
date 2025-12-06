@@ -4,6 +4,7 @@ import {UserDBType} from "../types";
 
 // type for the document
 export interface IUser extends Document, UserDBType {
+  login: string;
   email: string;
   fullName: string;
   avatar: string;

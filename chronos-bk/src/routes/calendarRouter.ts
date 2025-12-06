@@ -1,10 +1,7 @@
 import { Router } from 'express';
 
-// dummy func to create routes quickly
-import dummy from "../utils/dummyController";
-
 import {auth} from "../middleware/jwt";
-import {createCalendarController, getAllCalendarsController, getCalendarController, deleteCalendarController}
+import {createCalendarController, getAllCalendarsController, getCalendarController, deleteCalendarController, changeCalendarController}
   from "../modules/calendar/controller";
 
 // routers
@@ -24,7 +21,7 @@ router.use('/:calendarId/events', eventsRouter);
 router.get('/', auth, getAllCalendarsController);
 router.get('/:id', auth, getCalendarController);
 router.post('/', auth, createCalendarController);
-router.patch('/:id', dummy);
+router.patch('/:id', auth, changeCalendarController);
 router.delete('/:id', auth, deleteCalendarController);
 
 export default router;

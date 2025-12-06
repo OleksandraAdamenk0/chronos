@@ -1,5 +1,5 @@
 import React, {useContext} from "react";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 // types
 import type {LoginFormType} from "@/types";
@@ -18,12 +18,16 @@ import { UserContext } from "@/contexts/UserContext";
 const LoginPage: React.FC = () => {
   const userContext = useContext(UserContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const {path} = location.state || {undefined};
+  console.log("path: ", path, location);
 
   const handleSubmit = async (data: LoginFormType) => {
     try {
       const user = await login(data);
       if (userContext) userContext.setUser(user);
-      navigate("/calendar");
+      if (path) navigate(path);
+      else navigate("/calendar");
     } catch (error: any) {
       toast.error(error.message);
     }
