@@ -101,6 +101,22 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
     return categories;
   }
 
+  const addCategory = (value: CategoryType): void => {
+    setCategories([...categories, value]);
+  }
+
+  const updateCategory = (value: CategoryType): void => {
+    console.log("category changed: ", value);
+    setCategories(categories.map(c => {
+      if (c.id !== value.id) return c;
+      return value;
+    }))
+  }
+
+  const deleteCategory = (id: string): void => {
+    setCategories(categories.filter(category => category.id !== id));
+  }
+
   const addCalendars = (data: CalendarPreviewType[]): void => {
     setCalendars([...calendars, ...data]);
   }
@@ -134,10 +150,10 @@ const CalendarProvider: React.FC<Props> = ({ children }: Props) => {
 
   return <CalendarContext.Provider value={{getCalendarId, setCalendarId,
                                            getView, setView, changeCalendar,
-                                           startDay, setStartDay,
+                                           startDay, setStartDay, addCategory,
                                            getCalendars, addCalendars, deleteCalendar,
-                                           getCategories, getPermissions,
-                                           getStartWeek, loading
+                                           getCategories, getPermissions, updateCategory,
+                                           getStartWeek, loading, deleteCategory
   }}>{children}</CalendarContext.Provider>
 }
 

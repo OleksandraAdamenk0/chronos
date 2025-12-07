@@ -1,29 +1,21 @@
 import {useState} from "react";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, } from "@/components/ui/sidebar"
-import {
-  Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {Separator} from "@/components/ui/separator.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import { Label } from "@/components/ui/label";
 import {useCalendar} from "@/hooks/useCalendar.ts";
-import ColorPicker from "@/components/colorPicker.tsx";
 import {CreateEvent} from "@/components/dialogs/CreateEvent.tsx";
-import type {CategoryType} from "@/types";
 import {useUser} from "@/hooks/useUser.ts";
 import {CalendarsSection} from "@/components/layout/CalendarsSection.tsx";
+import CategoriesSection from "@/components/layout/CategoriesSection.tsx";
 
 
 export function AppSidebar() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState<boolean>(false);
-  const [isUsersOpen, setIsUsersOpen] = useState<boolean>(false);
+  // const [isUsersOpen, setIsUsersOpen] = useState<boolean>(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState<boolean>(false);
-  const [color, setColor] = useState("#aabbcc");
-  const {getCalendars, setStartDay, getCalendarId, getPermissions, getCategories} = useCalendar();
+  const {getCalendars, setStartDay, getCalendarId, getPermissions} = useCalendar();
   const {logout} = useUser();
 
 
@@ -32,14 +24,6 @@ export function AppSidebar() {
     setStartDay(date);
     setSelectedDate(date);
   };
-
-  const handleCreateCategory = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const name = (form.name as unknown as HTMLInputElement).value;
-    const description = (form.description as unknown as HTMLInputElement).value;
-    console.log(name, description, color);
-  }
 
   return (
     <Sidebar>
@@ -82,78 +66,18 @@ export function AppSidebar() {
         {/*categories*/}
         { getPermissions().manageCategories && (
           <SidebarGroup className="items-start">
-            <Button variant="outline" className="w-full mb-2" onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}>
-              Categories
-            </Button>
-            {isCategoriesOpen && (
-                <div className="w-full bg-accent rounded-md">
-
-                  <Dialog>
-                    <DialogTrigger className="w-full rounded-md mb-4 p-2 bg-primary text-sm font-semibold text-primary-foreground">
-                      Create new category
-                    </DialogTrigger>
-                    {getCategories().length > 0 && (<Separator />)}
-                    <DialogContent>
-                      <form onSubmit={handleCreateCategory}>
-                        <DialogHeader>
-                          <DialogTitle>New category</DialogTitle>
-                          <DialogDescription>
-                            Create a new category to keep your plans organized and always at hand.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 m-2">
-                          <div className="grid gap-3">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" defaultValue="New category" />
-                          </div>
-                          <div className="grid gap-3">
-                            <Label htmlFor="description">Description</Label>
-                            <Input type="text" id="description" defaultValue="Category description"></Input>
-                          </div>
-                          <div className="grid gap-3">
-                            <Label htmlFor="color">Color</Label>
-                            <ColorPicker value={color} onChange={setColor} />
-                          </div>
-                        </div>
-                        <DialogFooter className="sm:justify-start">
-                          <DialogClose asChild>
-                            <Button type="submit" variant="secondary">Create</Button>
-                            <Button  variant="secondary">Create</Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-
-                  <div className="flex flex-col gap-2 pb-2">
-                    {getCategories().map((category: CategoryType, index) => {
-                      return (
-                        <div className="flex flex-col gap-2">
-                          <div
-                            key={category.id}
-                            className={`font-bold py-2 px-6 flex cursor-pointer items-center rounded-md justify-start`}
-                            style={{transition: "background 0.5s"}}
-                          >
-                            <span className="text-primary">{category.name}</span>
-                          </div>
-                          {index < getCalendars().length - 1 && (<Separator/>)}
-                        </div>
-                      )})}
-                  </div>
-
-                </div>
-            )}
+            <CategoriesSection/>
           </SidebarGroup>
         ) }
 
         {/*users*/}
-        { getPermissions().manageParticipants && (
-          <SidebarGroup>
-            <Button variant="outline" className="w-full mb-2" onClick={() => setIsUsersOpen(!isUsersOpen)}>
-              Users
-            </Button>
-          </SidebarGroup>
-        )}
+        {/*{ getPermissions().manageParticipants && (*/}
+        {/*  <SidebarGroup>*/}
+        {/*    <Button variant="outline" className="w-full mb-2" onClick={() => setIsUsersOpen(!isUsersOpen)}>*/}
+        {/*      Users*/}
+        {/*    </Button>*/}
+        {/*  </SidebarGroup>*/}
+        {/*)}*/}
 
       </SidebarContent>
       <SidebarFooter>

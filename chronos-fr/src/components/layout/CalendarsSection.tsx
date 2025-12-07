@@ -25,7 +25,7 @@ export const CalendarsSection = () => {
     try {
       const result = await DELETE(`calendar/${calendar.id}`);
       if (!result.success) return toast.error(result.error);
-      else toast.success(result.data.message);
+      else toast.success("Calendar deleted successfully.");
       deleteCalendar(calendar.id);
     } catch (error) {
       console.log(error);

@@ -12,7 +12,6 @@ interface CreateEventFormProps {
 export function CreateEvent({open, setOpen}: CreateEventFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
-
   return (
     <Dialog open={open}>
       <DialogContent className="overflow-y-auto max-h-[90svh]">
@@ -39,6 +38,5 @@ export function CreateEvent({open, setOpen}: CreateEventFormProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
   )
 }

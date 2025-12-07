@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import {Button} from "@/components/ui/button.tsx";
 import L from "leaflet";
+import { IoSearch } from "react-icons/io5";
 import "leaflet/dist/leaflet.css";
 
 interface MiniMapPickerProps {
@@ -12,12 +14,11 @@ export default function MiniMapPicker({ value, onChange }: MiniMapPickerProps) {
   const markerRef = useRef<L.Marker | null>(null);
   const [search, setSearch] = useState("");
 
-  /** Инициализация карты */
   useEffect(() => {
     if (mapRef.current) return;
 
     const map = L.map("mini-map", {
-      center: [50.45, 30.52], // Киев как дефолт
+      center: [50.45, 30.52],
       zoom: 13,
     });
 
@@ -42,7 +43,6 @@ export default function MiniMapPicker({ value, onChange }: MiniMapPickerProps) {
     mapRef.current = map;
   }, []);
 
-  /** Если value меняется извне — обновляем метку */
   useEffect(() => {
     if (!markerRef.current || !mapRef.current) return;
 
@@ -51,7 +51,6 @@ export default function MiniMapPicker({ value, onChange }: MiniMapPickerProps) {
     mapRef.current.setView(coords);
   }, [value]);
 
-  /** Поиск адреса */
   const handleSearch = async () => {
     if (!search.trim()) return;
 
@@ -87,9 +86,10 @@ export default function MiniMapPicker({ value, onChange }: MiniMapPickerProps) {
           className="border p-2 rounded w-full"
           placeholder="Search address..."
         />
-        <button onClick={handleSearch} className="border px-3 rounded">
-          🔍
-        </button>
+        <Button type="button" onClick={(e) => {
+          e.stopPropagation();
+          handleSearch()
+        }} className="border px-3 rounded"><IoSearch /></Button>
       </div>
 
       <div id="mini-map" style={{ height: 300, borderRadius: 8 }} />

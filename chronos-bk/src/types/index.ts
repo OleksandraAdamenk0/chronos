@@ -67,5 +67,6 @@ export type CreateEventDataType = {
   endRepeatDate?: string,
   period?: RepeatType;
   reminder?: string,
+  categoryId?: string,
 }
 

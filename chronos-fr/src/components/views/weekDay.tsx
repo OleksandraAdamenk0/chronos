@@ -13,6 +13,7 @@ import {ImageDown, Trash2} from "lucide-react";
 import {useCalendar} from "@/hooks/useCalendar.ts";
 import {toast} from "sonner";
 import {DELETE} from "@/utils/api.ts";
+import {EventDetails} from "@/components/dialogs/EventDetails.tsx";
 
 interface WeekDayProps {
   day: Date;
@@ -82,6 +83,8 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
   const {deleteEvent} = useEvent();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hourHeight, setHourHeight] = useState(0);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const {getForDay} = useEvent();
 
@@ -180,7 +183,8 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log(event);
+                    setSelectedEventId(event.id);
+                    setDetailsOpen(true);
                   }}
                   className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
                   style={{
@@ -221,6 +225,13 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
           ))}
         </div>
       </div>
+      {selectedEventId && (
+        <EventDetails
+          open={detailsOpen}
+          setOpen={setDetailsOpen}
+          eventId={selectedEventId}
+        />
+      )}
     </div>
   );
 }

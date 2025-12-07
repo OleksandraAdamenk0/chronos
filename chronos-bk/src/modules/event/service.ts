@@ -2,11 +2,22 @@ import {CreateEventDataType} from "../../types";
 import eventModel, {IEvent} from "../../models/EventModel";
 import categoryModel from "../../models/CategoryModel";
 import calendarUserModel from "../../models/CalendarUserModel";
+import category from "../../models/CategoryModel";
+import userModel from "../../models/UserModel";
 
 export const createEventService = async (authorId: string, calendarId: string, data: CreateEventDataType) => {
   const DTI:
-    Omit<CreateEventDataType, "startDate" | "endDate" | "startRepeatDate" | "endRepeatDate">
-    & {authorId: string, calendarId: string, startDate: Date, endDate: Date, startRepeatDate?: Date, endRepeatDate?: Date, reminderTime?: Date} = {
+    Omit<CreateEventDataType, "startDate" | "endDate" | "startRepeatDate" | "endRepeatDate"> & {
+      authorId: string,
+      calendarId: string,
+      startDate: Date,
+      endDate: Date,
+      startRepeatDate?: Date,
+      endRepeatDate?: Date,
+      reminderTime?: Date,
+      categoryId?: string,
+  } =
+    {
     authorId,
     calendarId,
     title: data.title,
@@ -23,6 +34,7 @@ export const createEventService = async (authorId: string, calendarId: string, d
   }
   if (data.reminder) DTI.reminderTime = new Date(data.reminder);
   if (data.address) DTI.address = data.address;
+  if (data.categoryId) DTI.categoryId = data.categoryId;
   return await eventModel.insertOne(DTI)
 }
 
@@ -57,13 +69,45 @@ export const getEventsService = async (userId: string, calendarId: string, year:
   );
 }
 
-export const getEventColorService = async (event: IEvent): Promise<string> => {
+export const getEventDetailsService = async (userId: string, calendarId: string, eventId: string) => {
+  const eventData = await eventModel.findOne({calendarId: calendarId, _id: eventId}).exec();
+  if (!eventData) throw new Error("No event with id " + calendarId);
+  const color = await getEventColorService(userId, eventData);
+  if (!color) throw new Error("No color with id " + calendarId);
+  const category = eventData.categoryId ? await categoryModel.findById(eventData.categoryId): undefined;
+  const author = await userModel.findById(eventData.authorId).exec();
+  if (!author) throw new Error("No author with id " + eventData.authorId);
+  const result = {
+    id: eventId,
+    calendarId: eventData.calendarId,
+    title: eventData.title,
+    description: eventData.description,
+    color: color,
+    address: eventData.address,
+    startDate: eventData.startDate,
+    endDate: eventData.endDate,
+    reminder: eventData.reminderTime,
+    category: category,
+    author: {
+      id: author.id,
+      login: author.login,
+      email: author.email,
+      fullName: author.fullName,
+      avatar: author.avatar,
+      country: author.country
+    }
+  }
+  console.log("event details: ", result);
+  return result;
+}
+
+export const getEventColorService = async (userId: string, event: IEvent): Promise<string> => {
   if (event.categoryId) {
     const category = await categoryModel.findById(event.categoryId).exec();
     if (!category) throw new Error(`Category with id ${event.categoryId} not found`);
     return category.color;
   } else {
-    const calendarUser = await calendarUserModel.findOne({userId: event.authorId, calendarId: event.calendarId}).exec();
+    const calendarUser = await calendarUserModel.findOne({userId: userId, calendarId: event.calendarId}).exec();
     if (!calendarUser) throw new Error(`Record about user with id ${event.authorId} and calendar with id ${event.calendarId} not found`);
     return calendarUser.color;
   }

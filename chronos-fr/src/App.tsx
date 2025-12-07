@@ -13,6 +13,7 @@ import AcceptInvitePage from "@/pages/AcceptInvitePage.tsx";
 
 // components
 import { Toaster } from "@/components/ui/sonner";
+import {TooltipProvider} from "@/components/ui/tooltip.tsx";
 
 // providers
 import CalendarProvider from "@/components/providers/CalendarProvider.tsx";
@@ -30,18 +31,20 @@ function App() {
         <CalendarProvider>
           <EventProvider>
             <Toaster />
-            <Routes>
-              <Route path="/login" element={<LoginPage/> } />
-              <Route path="/register" element={<RegisterPage/> } />
-              <Route path="/register/success" element={<SuccessesRegistrationPage/> } />
-              <Route path="/invite/accept/:token" element={<AcceptInvitePage />} />
+            <TooltipProvider>
+              <Routes>
+                <Route path="/login" element={<LoginPage/> } />
+                <Route path="/register" element={<RegisterPage/> } />
+                <Route path="/register/success" element={<SuccessesRegistrationPage/> } />
+                <Route path="/invite/accept/:token" element={<AcceptInvitePage />} />
 
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Layout children={<MainPage/>} />} />
-                <Route path="/calendar" element={<Layout children={<MainPage/>} />} />
-                <Route path="/create" element={<Layout children={<CreateEventPage />} />} />
-              </Route>
-            </Routes>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Layout children={<MainPage/>} />} />
+                  <Route path="/calendar" element={<Layout children={<MainPage/>} />} />
+                  <Route path="/create" element={<Layout children={<CreateEventPage />} />} />
+                </Route>
+              </Routes>
+            </TooltipProvider>
           </EventProvider>
         </CalendarProvider>
       </UserProvider>

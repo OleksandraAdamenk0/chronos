@@ -69,6 +69,8 @@ export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
       address: address
     }
 
+    const categoryId = form.get("category");
+    if (categoryId) data.categoryId = categoryId as string;
     if (reminderDate) data.reminder = reminderDate.toISOString();
 
     if (isRepeat) {
@@ -109,8 +111,6 @@ export const CreateEventForm = ({ref, date, onExit}: CreateEventFormProps) => {
       toast.error("Ups. Something went wrong, please try again later");
     }
   }
-
-  console.log("categories: ", categories)
 
   return (
     <form ref={ref} onSubmit={handleCreateEvent} className="w-full">

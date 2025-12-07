@@ -1,5 +1,5 @@
 // utils
-type HexColorType = `#${string}`;
+export type HexColorType = `#${string}`;
 
 // user
 export type UserType = {
@@ -89,6 +89,7 @@ export type EventCreateType = {
   endRepeatDate?: string,
   period?: RepeatType;
   reminder?: string,
+  categoryId?: string,
 }
 
 export type EventPreview = {
@@ -98,4 +99,12 @@ export type EventPreview = {
   color: string;
   startDate: Date;
   endDate: Date;
+}
+
+export type DetailedEventType = EventPreview & {
+  description: string;
+  address: string;
+  reminder: string;
+  category: CategoryType,
+  author: UserType;
 }
