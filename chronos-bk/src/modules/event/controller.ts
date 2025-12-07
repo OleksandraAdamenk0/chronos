@@ -4,7 +4,7 @@ import {
   getEventsService,
   getEventColorService,
   deleteEventService,
-  getEventDetailsService
+  getEventDetailsService, changeEventService
 } from "./service";
 import {getPermissionsService} from "../calendar/service";
 
@@ -17,12 +17,36 @@ export const createEventController = async (req: Request, res: Response) => {
   if (!userId || !calendarId || !data) return res.status(400).json({success: false, error: "Necessary data weren't provided"});
 
   try {
+    const permissions = await getPermissionsService(userId, calendarId);
+    if (!permissions || !(permissions.manageEvents)) return res.status(403).json({success: false, error: "You don't have permissions to create event"});
     const event = await createEventService(userId, calendarId, data);
     console.log(event);
     const color = await getEventColorService(userId, event);
     return res.status(201).json({success: true, data: {id: event.id, color}});
   } catch (error: any) {
     return res.status(500).json({success: false, error: error.message});
+  }
+}
+
+export const changeEventController = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.userId;
+  const calendarId = req.params.calendarId;
+  const eventId = req.params.eventId;
+  const data = req.body;
+
+  if (!userId || !calendarId || !eventId || !data)
+    return res.status(400).json({success: false, error: "Necessary data weren't provided"});
+  try {
+    const permissions = await getPermissionsService(userId, calendarId);
+    if (!permissions || !(permissions.manageEvents))
+      return res.status(403).json({success: false, error: "You don't have permissions to create event"});
+    const event = await changeEventService(calendarId, eventId, data);
+    if (!event) return res.status(500).json({success: false, error: "Something went wrong"})
+    const color = await getEventColorService(userId, event);
+    return res.status(201).json({success: true, data: {...event, id: event?._id, color}});
+  } catch (error: any) {
+    return res.status(500).json({success: false, error: error.message || "Something went wrong"});
   }
 }
 

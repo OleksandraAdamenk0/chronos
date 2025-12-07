@@ -11,6 +11,7 @@ type EventContextType = {
   getForMonth: (date: Date) => EventPreview[];
   getForYear: (date: Date) => EventPreview[];
   addEvents: (event: EventPreview[]) => void;
+  changeEvents: (event: EventPreview[]) => void;
   deleteEvent: (event: EventPreview) => void;
 };
 

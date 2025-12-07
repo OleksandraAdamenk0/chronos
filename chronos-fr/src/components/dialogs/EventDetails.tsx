@@ -40,7 +40,7 @@ export const EventDetails = ({open, setOpen, eventId}: Props) => {
         setLoading(false);
       }
     }
-    if (getCalendarId() === "0") {
+    if (getCalendarId() === "0" || !eventId) {
       setOpen(false);
       return;
     }
@@ -67,29 +67,30 @@ export const EventDetails = ({open, setOpen, eventId}: Props) => {
           )}
         </DialogHeader>
 
-        {/* Автор */}
-        <section className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">Created by</h3>
+        {event.author && (
+          <section className="space-y-3">
+            <h3 className="text-sm font-medium text-muted-foreground">Created by</h3>
 
-          <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-            <Avatar className="size-10">
-              {event.author.avatar ? (
-                <AvatarImage src={event.author.avatar} />
-              ) : (
-                <AvatarFallback>
-                  {event.author.login.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              )}
-            </Avatar>
+            <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+              <Avatar className="size-10">
+                {event.author.avatar ? (
+                  <AvatarImage src={event.author.avatar} />
+                ) : (
+                  <AvatarFallback>
+                    {event.author.login.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
 
-            <div className="flex flex-col">
-              <span className="font-medium">{event.author.login}</span>
-              <span className="text-xs text-muted-foreground">
+              <div className="flex flex-col">
+                <span className="font-medium">{event.author.login}</span>
+                <span className="text-xs text-muted-foreground">
             {event.author.email}
           </span>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <Separator />
 

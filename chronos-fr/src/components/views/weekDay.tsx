@@ -13,12 +13,12 @@ import {ImageDown, Trash2} from "lucide-react";
 import {useCalendar} from "@/hooks/useCalendar.ts";
 import {toast} from "sonner";
 import {DELETE} from "@/utils/api.ts";
-import {EventDetails} from "@/components/dialogs/EventDetails.tsx";
+import {ChangeEvent} from "@/components/dialogs/ChangeEvent.tsx";
 
 interface WeekDayProps {
   day: Date;
   onDayClick: (date: Date) => void;
-  onEventClick?: (ev: EventPreview) => void;
+  onEventClick: (ev: EventPreview) => void;
 }
 
 type PositionedEventType = EventPreview & {
@@ -78,13 +78,13 @@ const layoutEvents = (events: EventPreview[], hourHeight: number): PositionedEve
   });
 };
 
-const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
+const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick, onEventClick}: WeekDayProps) => {
   const {getCalendarId, getPermissions} = useCalendar();
   const {deleteEvent} = useEvent();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hourHeight, setHourHeight] = useState(0);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [changeOpen, setChangeOpen] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState<string | null>();
 
   const {getForDay} = useEvent();
 
@@ -183,8 +183,9 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedEventId(event.id);
-                    setDetailsOpen(true);
+                    console.log("clicked event: ", event);
+                    onEventClick(event)
+                    return;
                   }}
                   className="relative flex justify-start items-center p-1 pl-3 color-primary-foreground cursor-pointer rounded-sm"
                   style={{
@@ -213,7 +214,11 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
               </ContextMenuTrigger>
 
               <ContextMenuContent className="w-40">
-                <ContextMenuItem onClick={() => console.log("Edit", event)}>
+                <ContextMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedId(event.id);
+                  setChangeOpen(true);
+                }}>
                   <ImageDown className="mr-2 h-4 w-4" />Change
                 </ContextMenuItem>
 
@@ -225,13 +230,7 @@ const WeekDay:React.FC<WeekDayProps> = ({day, onDayClick}: WeekDayProps) => {
           ))}
         </div>
       </div>
-      {selectedEventId && (
-        <EventDetails
-          open={detailsOpen}
-          setOpen={setDetailsOpen}
-          eventId={selectedEventId}
-        />
-      )}
+      <ChangeEvent open={changeOpen} setOpen={setChangeOpen} eventId={selectedId}></ChangeEvent>
     </div>
   );
 }

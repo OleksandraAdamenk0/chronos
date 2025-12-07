@@ -4,7 +4,7 @@ import { Router } from 'express';
 import dummy from "../utils/dummyController";
 
 // controllers
-import {createEventController, getEventsController, deleteEventController, getEventDetailsController} from "../modules/event/controller";
+import {createEventController, getEventsController, deleteEventController, getEventDetailsController, changeEventController} from "../modules/event/controller";
 import {auth} from "../middleware/jwt";
 
 // router and routes
@@ -14,6 +14,7 @@ router.get("/upcoming", dummy);
 router.get("/", auth, getEventsController);
 router.get("/:eventId", auth, getEventDetailsController);
 router.post("/", auth, createEventController);
+router.patch("/:eventId", auth, changeEventController);
 router.delete("/:eventId", auth, deleteEventController);
 
 export default router;

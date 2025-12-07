@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 
 
 // hooks
@@ -14,11 +14,15 @@ import {useNavigate} from "react-router-dom";
 import type {EventPreview} from "@/types";
 import MonthView from "@/components/views/monthView.tsx";
 import YearView from "@/components/views/yearView.tsx";
+import {EventDetails} from "@/components/dialogs/EventDetails.tsx";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
 
   const {getView, setView, startDay, setStartDay, getCalendarId} = useCalendar();
+
+  const [detailsOpen, setDetailsOpen] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState<string>("");
 
   const changeDate = (direction: string): void => {
     const newDate = new Date(startDay);
@@ -45,7 +49,6 @@ const MainPage: React.FC = () => {
 
   const handleDayClick = (date: Date): void => {
     if (getCalendarId() === "0") return;
-    console.log(date.toString());
     navigate("/create", {state: {date: date}});
   }
 
@@ -56,7 +59,8 @@ const MainPage: React.FC = () => {
 
   const handleEventClick = (event: EventPreview): void => {
     if (getCalendarId() === "0") return;
-    console.log("event clicked:", event);
+    setDetailsOpen(true);
+    setSelectedId(event.id);
   }
 
   return (
@@ -76,7 +80,7 @@ const MainPage: React.FC = () => {
             onEventClick={handleEventClick}
             />
         ): getView() === "day" ? (
-          <WeekDay onDayClick={handleDayClick} day={startDay}/>
+          <WeekDay onDayClick={handleDayClick} onEventClick={handleEventClick} day={startDay}/>
         ): getView() === "events"? (
           <EventsView onEventClick={handleEventClick}></EventsView>
         ): getView() === "month" ? (
@@ -87,6 +91,7 @@ const MainPage: React.FC = () => {
           <>This view is in development. Try later</>
         )}
       </div>
+      <EventDetails open={detailsOpen} setOpen={setDetailsOpen} eventId={selectedId} />
     </div>
 
   )

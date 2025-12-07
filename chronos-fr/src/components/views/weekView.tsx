@@ -5,7 +5,7 @@ import {useCalendar} from "@/hooks/useCalendar.ts";
 
 type WeekViewProps = {
   onDayClick: (date: Date) => void;
-  onEventClick?: (ev: EventPreview) => void;
+  onEventClick: (ev: EventPreview) => void;
   className?: string;
 };
 

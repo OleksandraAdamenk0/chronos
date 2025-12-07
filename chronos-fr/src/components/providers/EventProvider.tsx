@@ -208,6 +208,25 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
     });
   };
 
+  const changeEvents = (data: EventPreview[]): void => {
+    setEvents(prev => {
+      const copy = { ...prev };
+
+      for (const ev of data) {
+        const calendarId = ev.calendarId;
+        if (!copy[calendarId]) continue;
+
+        copy[calendarId] = copy[calendarId].map(existing => {
+          const isSame = existing.id === ev.id
+          console.log(isSame, existing, ev)
+          return isSame ? ev : existing;
+        });
+      }
+
+      return copy;
+    });
+  };
+
   const deleteEvent = (event: EventPreview): void => {
     setEvents(prev => {
       const copy = { ...prev };
@@ -220,7 +239,9 @@ const EventProvider: React.FC<Props> = ({ children }: Props) => {
     });
   }
 
-  return <EventContext.Provider value={{loading, getForDay, getForWeek, getForMonth, getForYear, addEvents, deleteEvent, getAll}}>{children}</EventContext.Provider>
+  return <EventContext.Provider value={{loading, getForDay, getForWeek, getForMonth, getForYear, addEvents,
+                                        deleteEvent, getAll, changeEvents
+  }}>{children}</EventContext.Provider>
 }
 
 export default EventProvider;

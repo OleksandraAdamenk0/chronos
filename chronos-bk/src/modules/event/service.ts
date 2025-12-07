@@ -4,6 +4,9 @@ import categoryModel from "../../models/CategoryModel";
 import calendarUserModel from "../../models/CalendarUserModel";
 import category from "../../models/CategoryModel";
 import userModel from "../../models/UserModel";
+import EventModel from "../../models/EventModel";
+import CategoryModel from "../../models/CategoryModel";
+import CalendarUserModel from "../../models/CalendarUserModel";
 
 export const createEventService = async (authorId: string, calendarId: string, data: CreateEventDataType) => {
   const DTI:
@@ -36,6 +39,38 @@ export const createEventService = async (authorId: string, calendarId: string, d
   if (data.address) DTI.address = data.address;
   if (data.categoryId) DTI.categoryId = data.categoryId;
   return await eventModel.insertOne(DTI)
+}
+
+export const changeEventService = async (calendarId: string, eventId: string, data: CreateEventDataType) => {
+  const DTU:
+    Omit<CreateEventDataType, "startDate" | "endDate" | "startRepeatDate" | "endRepeatDate"> & {
+    calendarId: string,
+    startDate: Date,
+    endDate: Date,
+    startRepeatDate?: Date,
+    endRepeatDate?: Date,
+    reminderTime?: Date,
+    categoryId?: string,
+  } =
+    {
+      calendarId,
+      title: data.title,
+      description: data.description,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      isRepeat: data.isRepeat,
+    }
+
+  if (data.isRepeat) {
+    if (data.startRepeatDate) DTU.startRepeatDate = new Date(data.startRepeatDate);
+    if (data.endRepeatDate) DTU.endRepeatDate = new Date(data.endRepeatDate);
+    if (data.period && data.period.length > 0) DTU.period = data.period;
+  }
+  if (data.reminder) DTU.reminderTime = new Date(data.reminder);
+  if (data.address) DTU.address = data.address;
+  if (data.categoryId) DTU.categoryId = data.categoryId;
+
+  return  await EventModel.findByIdAndUpdate(eventId, { $set: DTU }, { new: true }).exec();
 }
 
 export const getEventsService = async (userId: string, calendarId: string, year: number) => {
@@ -76,7 +111,6 @@ export const getEventDetailsService = async (userId: string, calendarId: string,
   if (!color) throw new Error("No color with id " + calendarId);
   const category = eventData.categoryId ? await categoryModel.findById(eventData.categoryId): undefined;
   const author = await userModel.findById(eventData.authorId).exec();
-  if (!author) throw new Error("No author with id " + eventData.authorId);
   const result = {
     id: eventId,
     calendarId: eventData.calendarId,
@@ -88,14 +122,14 @@ export const getEventDetailsService = async (userId: string, calendarId: string,
     endDate: eventData.endDate,
     reminder: eventData.reminderTime,
     category: category,
-    author: {
+    author: author? {
       id: author.id,
       login: author.login,
       email: author.email,
       fullName: author.fullName,
       avatar: author.avatar,
       country: author.country
-    }
+    } : undefined,
   }
   console.log("event details: ", result);
   return result;
